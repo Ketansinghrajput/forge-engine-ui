@@ -1,0 +1,332 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap');
+
+:host { 
+  display: block; 
+}
+
+.fw {
+  background: #F0E8D5;
+  min-height: 100vh;
+  padding: 2.5rem;
+  font-family: 'EB Garamond', Georgia, serif;
+  color: #1A0E06;
+}
+
+/* HEADER */
+.fh {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #8B6340;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.flogo {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.1rem;
+  color: #3D1F08;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.ftag {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  color: #6B4A28;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.ffunds {
+  background: #E8DCC8;
+  border: 1.5px solid #8B6340;
+  padding: 1.1rem 1.6rem;
+  text-align: right;
+}
+
+.ffunds-l {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  color: #5A3A1A;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0;
+}
+
+.ffunds-v {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem;
+  color: #3D1F08;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+/* GRID */
+.fg {
+  display: grid;
+  grid-template-columns: 1fr 310px;
+  gap: 1.5rem;
+}
+
+/* MAIN CARD */
+.fm {
+  background: #FAF5EB;
+  border: 1.5px solid #8B6340;
+  padding: 2.2rem;
+  position: relative;
+}
+
+.fm::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 0.5px solid #B8956A;
+  pointer-events: none;
+}
+
+.fmeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.fbadge {
+  border: 1.5px solid #5A3010;
+  color: #3D1F08;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  padding: 4px 12px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.fref {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.72rem;
+  color: #5A3A1A;
+  font-weight: 700;
+}
+
+.forn {
+  text-align: center;
+  color: #8B6340;
+  font-size: 1.2rem;
+  letter-spacing: 0.6em;
+  margin: 0.4rem 0;
+}
+
+.ftitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.8rem;
+  font-weight: 600;
+  color: #1A0E06;
+  line-height: 1.15;
+  margin: 0.8rem 0 0.3rem;
+}
+
+.fsubtitle {
+  font-size: 2rem;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.fdesc {
+  color: #3D2210;
+  font-size: 1.1rem;
+  line-height: 1.75;
+  max-width: 520px;
+  font-style: italic;
+  margin-bottom: 1.6rem;
+}
+
+/* STATS */
+.fstats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1.5px solid #8B6340;
+}
+
+.fstat { 
+  padding: 1.3rem 1.6rem; 
+}
+
+.fstat--l {
+  border-right: 1.5px solid #8B6340;
+  background: #EDE0C8;
+}
+
+.fstat-lbl {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.67rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #4A2C10;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.fstat-v {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  color: #3D1F08;
+  font-weight: 600;
+  margin: 0;
+}
+
+.fstat-v2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem;
+  color: #1A0E06;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* BUTTON */
+.fbtn {
+  width: 100%;
+  margin-top: 1.6rem;
+  background: #3D1F08;
+  color: #F0E8D5;
+  border: none;
+  padding: 1.1rem;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-weight: 700;
+}
+
+.fbtn:hover { 
+  background: #5A3010; 
+}
+
+/* LOG */
+.fl {
+  background: #FAF5EB;
+  border: 1.5px solid #8B6340;
+  padding: 1.6rem;
+}
+
+.fl-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1A0E06;
+  border-bottom: 1.5px solid #8B6340;
+  padding-bottom: 0.9rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.fl-dot {
+  width: 9px;
+  height: 9px;
+  background: #5A3010;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ffeed {
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+.fentry {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #C8A878;
+}
+
+.fentry:last-child { 
+  border-bottom: none; 
+}
+
+.fetop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.femsg {
+  font-size: 0.95rem;
+  color: #1A0E06;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.feamt {
+  color: #5A3010;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.fesys {
+  color: #5A3A1A;
+  font-style: italic;
+}
+
+.fetime {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.67rem;
+  color: #5A3A1A;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.ftimer {
+  display: inline-flex;
+  align-items: center;
+  color: #4a3721;
+}
+
+.ftimer-urgent span {
+  color: #a52a2a !important; /* Warning Red */
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.5; }
+}
+
+/* FOOTER */
+.ffooter {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 2px solid #8B6340;
+  text-align: center;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.67rem;
+  letter-spacing: 0.2em;
+  color: #4A2C10;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.forn-sm { 
+  color: #8B6340; 
+  font-size: 1rem; 
+  margin-bottom: 0.5rem; 
+}
+
+::-webkit-scrollbar { 
+  width: 3px; 
+}
+
+::-webkit-scrollbar-thumb { 
+  background: #8B6340; 
+}
+
+::-webkit-scrollbar-track { 
+  background: #E8DCC8; 
+}

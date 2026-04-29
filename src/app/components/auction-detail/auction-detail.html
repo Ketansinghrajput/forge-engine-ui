@@ -1,0 +1,77 @@
+<div class="fw">
+  <div class="fh">
+    <div>
+      <h1 class="flogo">Forge Fine Auctions</h1>
+      <p class="ftag">&#x2715; Est. MMXXVI &#x2715; Live Auction</p>
+    </div>
+    <div class="ffunds">
+      <p class="ffunds-l">Available Funds</p>
+      <p class="ffunds-v">₹{{ availableFunds | number:'1.2-2' }}</p>
+    </div>
+  </div>
+
+  <div class="fg">
+    <div class="fm">
+      <div class="fmeta" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <span class="fbadge">&#x2737; Live Lot</span>
+        
+        <div class="ftimer" [ngClass]="{'ftimer-urgent': isUrgent}">
+          <span style="font-size: 10px; letter-spacing: 2px; color: #8b7355;">ENDS IN:</span>
+          <span style="font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; margin-left: 8px;">
+            {{ remainingTime }}
+          </span>
+        </div>
+
+        <span class="fref">Ref: #ROLEX-SUB-1960</span>
+      </div>
+      
+      <div class="forn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</div>
+      <h2 class="ftitle">Vintage Rolex<br><span class="fsubtitle">Submariner</span></h2>
+      <p class="fdesc">
+        Circa 1960s. Features the original 'meters first' matte black dial with beautiful
+        cream-coloured patina on the hour markers. Movement serviced by Rolex Heritage specialists.
+      </p>
+
+      <div class="fstats">
+        <div class="fstat fstat--l">
+          <p class="fstat-lbl">Current Highest Bid</p>
+          <p class="fstat-v">₹{{ currentBid | number }}</p>
+        </div>
+        <div class="fstat">
+          <p class="fstat-lbl">Current Leader</p>
+          <p class="fstat-v2">
+            {{ highestBidder && highestBidder !== 'Waiting...' ? (highestBidder | slice:0:3) + '****' : 'Waiting...' }}
+          </p>
+        </div>
+      </div>
+
+      <button class="fbtn" 
+              (click)="placeBid()" 
+              [disabled]="!wsService.isConnected"
+              [style.opacity]="wsService.isConnected ? '1' : '0.5'">
+        &#x2192;&nbsp; {{ wsService.isConnected ? 'Raise Bid to ₹' + ((currentBid + 500) | number) : 'Connecting to Engine...' }}
+      </button>
+    </div>
+
+    <div class="fl">
+      <h3 class="fl-title"><span class="fl-dot"></span>Activity Log</h3>
+      <div class="ffeed">
+        <div *ngFor="let msg of feed" class="fentry">
+          <div class="fetop">
+            <div class="femsg">
+              <span *ngIf="!msg.message" class="feamt">₹{{ (msg.bidAmount || msg.newPrice) | number }}</span>
+              <span *ngIf="!msg.message"> placed by {{ (msg.userEmail || msg.bidder) | slice:0:3 }}****</span>
+              <span *ngIf="msg.message" class="fesys">{{ msg.message }}</span>
+            </div>
+            <p class="fetime">{{ msg.timestamp }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ffooter">
+    <div class="forn-sm">&#x2665;</div>
+    Forge Fine Auctions &copy; 2026 &nbsp;&#x2715;&nbsp; London &nbsp;&#x2715;&nbsp; New York &nbsp;&#x2715;&nbsp; Geneva
+  </div>
+</div>
