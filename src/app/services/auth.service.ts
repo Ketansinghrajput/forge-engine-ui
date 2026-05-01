@@ -1,0 +1,33 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, tap } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private apiUrl = 'http://localhost:8080/api/v1/auth'; // Backend URL
+
+  constructor(private http: HttpClient) { }
+
+  login(credentials: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/authenticate`, credentials).pipe(
+      tap((res: any) => {
+        // 🚀 SENSEI: Isse token browser mein "Hamesha" ke liye save ho jayega
+        if (res.token) {
+          localStorage.setItem('token', res.token);
+        }
+      })
+    );
+  }
+
+  // Automation Check: Kya user pehle se logged in hai?
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
+  logout() {
+    localStorage.removeItem('token');
+    window.location.reload(); // State clean karne ke liye
+  }
+}

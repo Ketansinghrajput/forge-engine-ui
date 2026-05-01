@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
-// FIX: Exact import path for the child component
-import { AuctionDetail } from './components/auction-detail/auction-detail';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [AuctionDetail],
-  templateUrl: './app.component.html'
+  imports: [RouterOutlet], // ✅ Bas ye hi kaafi hai
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
 })
 export class AppComponent {
+  title = 'forge-ui';
 }

@@ -45,12 +45,16 @@
         </div>
       </div>
 
-      <button class="fbtn" 
-              (click)="placeBid()" 
-              [disabled]="!wsService.isConnected"
-              [style.opacity]="wsService.isConnected ? '1' : '0.5'">
-        &#x2192;&nbsp; {{ wsService.isConnected ? 'Raise Bid to ₹' + ((currentBid + 500) | number) : 'Connecting to Engine...' }}
-      </button>
+     <button class="fbtn" 
+        (click)="placeBid()" 
+        [disabled]="!(wsService.connectionStatus$ | async)"
+        [style.opacity]="(wsService.connectionStatus$ | async) ? '1' : '0.5'">
+    
+    &#x2192;&nbsp; 
+    {{ (wsService.connectionStatus$ | async) 
+        ? 'Raise Bid to ₹' + (currentBid + 500 | number) 
+        : 'Connecting to Engine...' }}
+</button>
     </div>
 
     <div class="fl">

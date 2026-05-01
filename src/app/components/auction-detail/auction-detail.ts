@@ -2,19 +2,21 @@ import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { WebsocketService } from '../../services/websocket.service'; 
+import { HttpClient, HttpHeaders } from '@angular/common/http'; // 🚀 SENSEI FIX: API Imports
 
 @Component({
   selector: 'app-auction-detail',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './auction-detail.html',
-  styleUrl: './auction-detail.css' // SENSEI: Make sure it's styleUrl (Angular 17+) or styleUrls array
+  styleUrl: './auction-detail.css' 
 })
 export class AuctionDetail implements OnInit, OnDestroy {
   // --- UI State Variables ---
-  currentBid: number = 12000;
-  availableFunds: number = 14500; // Mock Wallet balance
-  highestBidder: string = 'Waiting...';
+  // 🚀 SENSEI FIX: Hardcode hata diya. Ab 0 se start hoga, API real data layegi
+  currentBid: number = 0;
+  availableFunds: number = 0; 
+  highestBidder: string = 'Loading engine...';
   feed: any[] = []; 
 
   remainingTime: string = '';
@@ -26,35 +28,45 @@ export class AuctionDetail implements OnInit, OnDestroy {
 
   constructor(
     public wsService: WebsocketService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient // 🚀 SENSEI FIX: HttpClient inject kiya
   ) {}
 
   ngOnInit() {
-    // 1. TIMER ENGINE
+    // 1. STATE SYNC ENGINE (Fetch Real Data from DB)
+    this.loadInitialState();
+
+    // 2. TIMER ENGINE
     this.updateCountdown();
     this.timerId = setInterval(() => {
       this.updateCountdown();
       this.cdr.detectChanges(); 
     }, 1000);
 
-    // 2. WEBSOCKET ENGINE
+    // 3. WEBSOCKET ENGINE
     try {
-      this.wsService.connect();
-      this.wsSubscription = this.wsService.updates$.subscribe((msg: any) => {
-        console.log('--- BROADCAST RECEIVED ---', msg);
+      this.wsService.connect(); // Sirf connect call karo
 
-        // 🚀 SENSEI FIX 1: Backend ab 'newPrice' aur 'bidder' bhejta hai
-        this.currentBid = msg.newPrice || this.currentBid;
-        this.highestBidder = msg.bidder || this.highestBidder;
+// Subscription hamesha active rahega, jaise hi data aayega ye trigger hoga
+this.wsSubscription = this.wsService.updates$.subscribe((msg: any) => {
+    console.log('--- BROADCAST RECEIVED ---', msg);
 
-        // 🚀 SENSEI FIX 2: Wallet balance update logic (Temporary Hack)
-        // Note: Interview se pehle isko ek proper REST call se replace karna padega.
-        // `msg.bidder` ke saath tera asli email match karwana hoga jab JWT proper parse ho.
-        if (msg.bidder === 'tester@forge.com') { // Apne backend wale test user ka naam daal de yahan
-           this.availableFunds = 14500 - (this.currentBid - 12000);
-        }
+    // 🚀 SENSEI: Price update logic
+    this.currentBid = msg.newPrice; 
+    this.highestBidder = msg.bidder;
 
-        // 🚀 SENSEI FIX 3: Feed ke keys bhi fix kar diye
+    // Wallet sync
+    if (msg.bidder === 'don@forge.com') { // Apne naye email se match karo
+        this.availableFunds -= 500;
+    }
+
+this.cdr.markForCheck(); // Heavy update ke liye
+    this.cdr.detectChanges();
+
+if (msg.endTime) {
+        this.endTime = new Date(msg.endTime); // 🚀 Auction extend hone par timer update hoga
+    }
+        // Feed log update
         const newLogEntry = {
           newPrice: msg.newPrice,
           bidder: msg.bidder,
@@ -74,21 +86,36 @@ export class AuctionDetail implements OnInit, OnDestroy {
     }
   }
 
+  // 🚀 SENSEI FIX: Naya method jo Backend se initial state layega
+  loadInitialState() {
+    const token = localStorage.getItem('token'); 
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    this.http.get<any>('http://localhost:8080/api/v1/engine/auction-state/1', { headers })
+      .subscribe({
+        next: (state) => {
+          console.log("--- INITIAL STATE LOADED ---", state);
+          this.currentBid = state.currentBid;
+          this.highestBidder = state.highestBidder;
+          this.availableFunds = state.availableFunds;
+          this.endTime = new Date(state.endTime);
+          this.cdr.detectChanges(); // UI update maar
+        },
+        error: (err) => {
+          console.error("State sync failed. Token expired ya backend band hai?", err);
+        }
+      });
+  }
+
   placeBid() {
-    if (!this.wsService.isConnected) {
-      alert("Wait Sensei! Engine is warming up...");
-      return;
+    if (!this.wsService.connectionStatus$.getValue()) {
+    console.error('🔴 Pehle connect hone do, Sensei!');
+    return;
     }
 
     const newBidAmount = this.currentBid + 500;
     
-    // Check if funds available
-    if (newBidAmount - 12000 > 14500) {
-      alert("Aukaat se bahar! Funds insufficient.");
-      return;
-    }
-
-    // 🚀 SENSEI FIX 4: Yahan se 'currentUserEmail' hata diya kyunki backend Token se nikalega
+    // Fire the engine
     this.wsService.sendBid(1, newBidAmount);
   }
 
@@ -114,4 +141,6 @@ export class AuctionDetail implements OnInit, OnDestroy {
     if (this.wsSubscription) this.wsSubscription.unsubscribe();
     if (this.timerId) clearInterval(this.timerId);
   }
+}export class AuctionDetailComponent { // 🚀 SENSEI: Is line ko verify karo
+  // Tumhara existing code yahan hoga
 }
