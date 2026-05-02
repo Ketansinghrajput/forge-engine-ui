@@ -1,0 +1,72 @@
+<app-navbar></app-navbar>
+
+<div class="ca-wrapper">
+  <div class="ca-card">
+
+    <div class="ca-header">
+      <p class="ca-eyebrow">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</p>
+      <h2 class="ca-title">List a New Lot</h2>
+      <p class="ca-subtitle">Submit your item for live auction on Forge Fine Auctions</p>
+    </div>
+
+    <div class="ca-success" *ngIf="successMsg">
+      &#x2737; {{ successMsg }}
+    </div>
+
+    <div class="ca-error" *ngIf="errorMsg">
+      &#x2715; {{ errorMsg }}
+    </div>
+
+    <div class="ca-form" *ngIf="!successMsg">
+
+      <div class="ca-field">
+        <label class="ca-label">Item Title</label>
+        <input class="ca-input" type="text"
+               placeholder="e.g. Vintage Rolex Submariner"
+               [(ngModel)]="form.title">
+      </div>
+
+      <div class="ca-field">
+        <label class="ca-label">Description</label>
+        <textarea class="ca-input ca-textarea"
+                  placeholder="Describe the item, provenance, condition..."
+                  [(ngModel)]="form.description"></textarea>
+      </div>
+
+      <div class="ca-field">
+        <label class="ca-label">Item Image URL</label>
+        <input class="ca-input" type="text"
+               placeholder="https://images.unsplash.com/..."
+               [(ngModel)]="form.imageUrl">
+      </div>
+
+      <div class="ca-field">
+        <label class="ca-label">Starting Price (₹)</label>
+        <input class="ca-input" type="number"
+               placeholder="e.g. 50000"
+               [(ngModel)]="form.startingPrice">
+      </div>
+
+      <div class="ca-row">
+        <div class="ca-field">
+          <label class="ca-label">Start Time</label>
+          <input class="ca-input" type="datetime-local"
+                 [(ngModel)]="form.startTime">
+        </div>
+        <div class="ca-field">
+          <label class="ca-label">End Time</label>
+          <input class="ca-input" type="datetime-local"
+                 [(ngModel)]="form.endTime">
+        </div>
+      </div>
+
+      <button class="ca-btn"
+              (click)="submit()"
+              [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Submitting...' : '→ List Item for Auction' }}
+      </button>
+
+    </div>
+
+  </div>
+</div>
