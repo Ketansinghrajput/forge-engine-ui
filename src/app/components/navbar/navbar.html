@@ -1,0 +1,72 @@
+<nav class="fn">
+  <!-- LEFT: Logo -->
+  <div class="fn-left">
+    <a routerLink="/auction-lobby" class="fn-logo">Forge Fine Auctions</a>
+    <p class="fn-tag">&#x2715; Est. MMXXVI &#x2715; Live Auction</p>
+  </div>
+
+  <!-- CENTER: Nav Links -->
+<div class="fn-center">
+  <a routerLink="/auctions" class="fn-link">
+    <span class="fn-link-icon">&#x2737;</span> Live Auctions
+  </a>
+  <span class="fn-sep">&#x2015;</span>
+  <a routerLink="/my-bids" class="fn-link">
+    <span class="fn-link-icon">&#x25C6;</span> My Bids
+  </a>
+  <span class="fn-sep">&#x2015;</span>
+  <a routerLink="/results" class="fn-link">
+    <span class="fn-link-icon">&#x2764;</span> Results
+  </a>
+  <span class="fn-sep">&#x2015;</span>
+  <a routerLink="/create-auction" class="fn-link">
+    <span class="fn-link-icon">&#x2295;</span> List Item
+  </a>
+</div>
+
+  <!-- RIGHT: Funds + Avatar -->
+  <div class="fn-right">
+  <div class="fn-funds" routerLink="/wallet" style="cursor:pointer">
+  <p class="fn-funds-l">Available Funds</p>
+  <p class="fn-funds-v">₹{{ availableFunds | number:'1.2-2' }}</p>
+</div>
+
+    <div class="fn-dropdown">
+      <button class="fn-avatar-btn" (click)="toggleDropdown()">
+        <span class="fn-avatar-initials">{{ userInitials }}</span>
+      </button>
+
+      <div class="fn-dropdown-menu" *ngIf="isDropdownOpen">
+        <div class="fn-dropdown-inner">
+
+          <div class="fn-dp-email-row">
+            <span class="fn-dp-email">{{ userEmail }}</span>
+            <button class="fn-dp-close" (click)="isDropdownOpen = false">&#x2715;</button>
+          </div>
+
+          <div class="fn-dp-avatar-section">
+            <div class="fn-dp-avatar-large">
+              <span class="fn-dp-avatar-text">{{ userInitials }}</span>
+            </div>
+            <p class="fn-dp-name">{{ userName }}</p>
+            <p class="fn-dp-tag">&#x2715; Authorized Bidder &#x2715;</p>
+            <button class="fn-dp-manage-btn" routerLink="/profile" (click)="isDropdownOpen = false">
+              &#x2767; Manage Profile
+            </button>
+          </div>
+
+          <div class="fn-dp-options">
+            <a routerLink="/settings" class="fn-dp-item" (click)="isDropdownOpen = false">
+              <span class="fn-dp-item-icon">&#x2737;</span> Settings
+            </a>
+            <div class="fn-dp-divider"></div>
+            <a class="fn-dp-item fn-dp-item--logout" (click)="logout()">
+              <span class="fn-dp-item-icon">&#x2715;</span> Logout
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,115 @@
+<app-navbar></app-navbar>
+
+<div class="wt-wrapper">
+  <div class="wt-card">
+
+    <div class="wt-header">
+      <p class="wt-eyebrow">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</p>
+      <h2 class="wt-title">Add Funds</h2>
+      <p class="wt-subtitle">Top up your Forge bidding wallet</p>
+    </div>
+
+    <!-- CURRENT BALANCE -->
+    <div class="wt-balance">
+      <span class="wt-balance-lbl">Current Balance</span>
+      <span class="wt-balance-v">₹{{ currentBalance | number:'1.2-2' }}</span>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="wt-success" *ngIf="successMsg">
+      &#x2737; {{ successMsg }}
+      <a routerLink="/auctions" class="wt-success-link">&#x2192; Back to Auctions</a>
+    </div>
+
+    <!-- ERROR -->
+    <div class="wt-error" *ngIf="errorMsg">
+      &#x2715; {{ errorMsg }}
+    </div>
+
+    <div *ngIf="!successMsg">
+
+      <!-- PRESET AMOUNTS -->
+      <div class="wt-section-lbl">Select Amount</div>
+      <div class="wt-presets">
+        <button *ngFor="let amt of presetAmounts"
+                class="wt-preset-btn"
+                [class.wt-preset-btn--active]="selectedAmount === amt && !customAmount"
+                (click)="selectPreset(amt)">
+          ₹{{ amt | number }}
+        </button>
+      </div>
+
+      <!-- CUSTOM AMOUNT -->
+      <div class="wt-field">
+        <label class="wt-label">Or Enter Custom Amount (₹)</label>
+        <input class="wt-input" type="number"
+               placeholder="e.g. 75000"
+               [(ngModel)]="customAmount"
+               (input)="selectedAmount = null">
+      </div>
+
+      <!-- PAYMENT METHOD -->
+      <div class="wt-section-lbl">Payment Method</div>
+      <div class="wt-methods">
+        <button *ngFor="let method of paymentMethods"
+                class="wt-method-btn"
+                [class.wt-method-btn--active]="selectedMethod === method.id"
+                (click)="selectedMethod = method.id">
+          <span class="wt-method-icon">{{ method.icon }}</span>
+          <span>{{ method.label }}</span>
+        </button>
+      </div>
+
+      <!-- UPI FIELD -->
+      <div class="wt-field" *ngIf="selectedMethod === 'upi'">
+        <label class="wt-label">UPI ID</label>
+        <input class="wt-input" type="text" placeholder="yourname@upi">
+      </div>
+
+      <!-- CARD FIELDS -->
+      <div *ngIf="selectedMethod === 'card'">
+        <div class="wt-field">
+          <label class="wt-label">Card Number</label>
+          <input class="wt-input" type="text" placeholder="4242 4242 4242 4242" maxlength="19">
+        </div>
+        <div class="wt-row">
+          <div class="wt-field">
+            <label class="wt-label">Expiry</label>
+            <input class="wt-input" type="text" placeholder="MM/YY" maxlength="5">
+          </div>
+          <div class="wt-field">
+            <label class="wt-label">CVV</label>
+            <input class="wt-input" type="password" placeholder="•••" maxlength="3">
+          </div>
+        </div>
+      </div>
+
+      <!-- NET BANKING -->
+      <div class="wt-field" *ngIf="selectedMethod === 'netbanking'">
+        <label class="wt-label">Select Bank</label>
+        <select class="wt-input wt-select">
+          <option value="">-- Select Bank --</option>
+          <option>State Bank of India</option>
+          <option>HDFC Bank</option>
+          <option>ICICI Bank</option>
+          <option>Axis Bank</option>
+          <option>Kotak Mahindra Bank</option>
+        </select>
+      </div>
+
+      <!-- SUMMARY -->
+      <div class="wt-summary" *ngIf="finalAmount > 0">
+        <span class="wt-summary-lbl">Amount to Add</span>
+        <span class="wt-summary-v">₹{{ finalAmount | number:'1.2-2' }}</span>
+      </div>
+
+      <!-- BUTTON -->
+      <button class="wt-btn" (click)="topUp()" [disabled]="isProcessing">
+        <span *ngIf="!isProcessing">&#x2192;&nbsp; Confirm & Add Funds</span>
+        <span *ngIf="isProcessing">&#x23F3;&nbsp; Processing...</span>
+      </button>
+
+    </div>
+
+  </div>
+</div>

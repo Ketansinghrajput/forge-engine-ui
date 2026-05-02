@@ -25,7 +25,7 @@ export class LoginComponent {
     this.authService.login(credentials).subscribe({
       next: (res) => {
         console.log('Sensei, Access Granted! 🛡️');
-        this.router.navigate(['/auctions']); // Redirect to Auction Page
+this.router.navigate(['/auctions']);
       },
       error: (err) => {
         this.isLoading = false;

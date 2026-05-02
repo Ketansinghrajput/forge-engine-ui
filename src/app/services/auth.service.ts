@@ -6,13 +6,12 @@ import { Observable, tap } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/v1/auth'; // Backend URL
-
+private apiUrl = 'http://localhost:8080/api/v1/auth/login'; // authenticate ki jagah login
   constructor(private http: HttpClient) { }
 
   login(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/authenticate`, credentials).pipe(
-      tap((res: any) => {
+return this.http.post(`${this.apiUrl}`, credentials).pipe(
+        tap((res: any) => {
         // 🚀 SENSEI: Isse token browser mein "Hamesha" ke liye save ho jayega
         if (res.token) {
           localStorage.setItem('token', res.token);

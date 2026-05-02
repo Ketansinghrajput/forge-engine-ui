@@ -4,17 +4,54 @@
       <h1 class="flogo">Forge Fine Auctions</h1>
       <p class="ftag">&#x2715; Est. MMXXVI &#x2715; Live Auction</p>
     </div>
-    <div class="ffunds">
-      <p class="ffunds-l">Available Funds</p>
-      <p class="ffunds-v">₹{{ availableFunds | number:'1.2-2' }}</p>
+
+    <div class="fh-right">
+      <div class="ffunds">
+        <p class="ffunds-l">Available Funds</p>
+        <p class="ffunds-v">₹{{ availableFunds | number:'1.2-2' }}</p>
+      </div>
+
+      <div class="profile-dropdown">
+        <button class="avatar-btn" (click)="toggleDropdown()">
+          <span class="avatar-initials">{{ userInitials }}</span>
+        </button>
+
+        <div class="dropdown-menu" *ngIf="isDropdownOpen">
+          <div class="dropdown-inner">
+            <div class="dp-email-row">
+              <span class="dp-email">{{ userEmail }}</span>
+              <button class="dp-close" (click)="isDropdownOpen = false">&#x2715;</button>
+            </div>
+            <div class="dp-avatar-section">
+              <div class="dp-avatar-large">
+                <span class="dp-avatar-large-text">{{ userInitials }}</span>
+              </div>
+              <p class="dp-name">{{ userName }}</p>
+              <p class="dp-tag">&#x2715; Authorized Bidder &#x2715;</p>
+              <button class="dp-manage-btn" routerLink="/profile" (click)="isDropdownOpen = false">
+                &#x2767; Manage Profile
+              </button>
+            </div>
+            <div class="dp-options">
+              <a routerLink="/settings" class="dp-item" (click)="isDropdownOpen = false">
+                <span class="dp-item-icon">&#x2737;</span> Settings
+              </a>
+              <div class="dp-divider"></div>
+              <a class="dp-item dp-item--logout" (click)="logout()">
+                <span class="dp-item-icon">&#x2715;</span> Logout
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="fg">
     <div class="fm">
-      <div class="fmeta" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div class="fmeta">
         <span class="fbadge">&#x2737; Live Lot</span>
-        
+
         <div class="ftimer" [ngClass]="{'ftimer-urgent': isUrgent}">
           <span style="font-size: 10px; letter-spacing: 2px; color: #8b7355;">ENDS IN:</span>
           <span style="font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; margin-left: 8px;">
@@ -22,15 +59,12 @@
           </span>
         </div>
 
-        <span class="fref">Ref: #ROLEX-SUB-1960</span>
+        <span class="fref">Ref: {{ auctionRef }}</span>
       </div>
-      
+
       <div class="forn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</div>
-      <h2 class="ftitle">Vintage Rolex<br><span class="fsubtitle">Submariner</span></h2>
-      <p class="fdesc">
-        Circa 1960s. Features the original 'meters first' matte black dial with beautiful
-        cream-coloured patina on the hour markers. Movement serviced by Rolex Heritage specialists.
-      </p>
+      <h2 class="ftitle">{{ auctionTitle }}</h2>
+      <p class="fdesc">{{ auctionDescription }}</p>
 
       <div class="fstats">
         <div class="fstat fstat--l">
@@ -40,21 +74,20 @@
         <div class="fstat">
           <p class="fstat-lbl">Current Leader</p>
           <p class="fstat-v2">
-            {{ highestBidder && highestBidder !== 'Waiting...' ? (highestBidder | slice:0:3) + '****' : 'Waiting...' }}
+            {{ (highestBidder && highestBidder !== 'Waiting...') ? highestBidder : 'Waiting for Bids...' }}
           </p>
         </div>
       </div>
 
-     <button class="fbtn" 
-        (click)="placeBid()" 
+      <button class="fbtn"
+        (click)="placeBid()"
         [disabled]="!(wsService.connectionStatus$ | async)"
         [style.opacity]="(wsService.connectionStatus$ | async) ? '1' : '0.5'">
-    
-    &#x2192;&nbsp; 
-    {{ (wsService.connectionStatus$ | async) 
-        ? 'Raise Bid to ₹' + (currentBid + 500 | number) 
-        : 'Connecting to Engine...' }}
-</button>
+        &#x2192;&nbsp;
+        {{ (wsService.connectionStatus$ | async)
+            ? 'Raise Bid to ₹' + (currentBid + 500 | number)
+            : 'Connecting to Engine...' }}
+      </button>
     </div>
 
     <div class="fl">
@@ -64,7 +97,9 @@
           <div class="fetop">
             <div class="femsg">
               <span *ngIf="!msg.message" class="feamt">₹{{ (msg.bidAmount || msg.newPrice) | number }}</span>
-              <span *ngIf="!msg.message"> placed by {{ (msg.userEmail || msg.bidder) | slice:0:3 }}****</span>
+              <span *ngIf="!msg.message">
+                placed by {{ msg.bidderName || msg.bidder }}
+              </span>
               <span *ngIf="msg.message" class="fesys">{{ msg.message }}</span>
             </div>
             <p class="fetime">{{ msg.timestamp }}</p>
