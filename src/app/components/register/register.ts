@@ -1,25 +1,27 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './login.html',
-  styleUrl: './login.css'
+  templateUrl: './register.html',
+  styleUrl: './register.css'
 })
-export class LoginComponent implements AfterViewInit, OnDestroy {
+export class RegisterComponent implements AfterViewInit, OnDestroy {
+  fullName = '';
   email = '';
   password = '';
+  confirmPassword = '';
   isLoading = false;
+  errorMsg = '';
   private floatStage: HTMLElement | null = null;
   private styleEl: HTMLElement | null = null;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   ngAfterViewInit(): void {
     setTimeout(() => {
@@ -34,15 +36,22 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     this.styleEl?.remove();
   }
 
-  onLogin() {
+  onRegister() {
+    this.errorMsg = '';
+    if (this.password !== this.confirmPassword) {
+      this.errorMsg = 'Passwords do not match.';
+      return;
+    }
     this.isLoading = true;
-    const credentials = { email: this.email, password: this.password };
-    this.authService.login(credentials).subscribe({
-      next: () => this.router.navigate(['/auctions']),
-      error: (err) => {
+    this.http.post('http://localhost:8080/api/v1/auth/register', {
+      fullName: this.fullName,
+      email: this.email,
+      password: this.password
+    }).subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => {
         this.isLoading = false;
-        console.error('Login Failed!', err);
-        alert('Invalid credentials, Sensei! Database check karo.');
+        this.errorMsg = 'Registration failed. Email may already exist.';
       }
     });
   }
@@ -78,15 +87,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     ];
 
     const stage = document.createElement('div');
-    stage.style.cssText = `
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      pointer-events: none;
-      overflow: hidden;
-    `;
+    stage.style.cssText = `position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;overflow:hidden;`;
     document.body.appendChild(stage);
     this.floatStage = stage;
 
@@ -112,7 +113,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   }
 
   private initParticles(): void {
-    const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
+    const canvas = document.getElementById('register-particle-canvas') as HTMLCanvasElement;
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
 

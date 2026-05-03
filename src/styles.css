@@ -1,15 +1,57 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap');
 
-@layer base {
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+:root {
+  --bg-primary: #FAF5EB;
+  --bg-secondary: #F5EFE0;
+  --bg-input: #EDE0C8;
+  --bg-page: #F0E8D5;
+  --border: #8B6340;
+  --border-light: #C8A878;
+  --text-primary: #3D1F08;
+  --text-secondary: #5A3A1A;
+  --text-muted: #6B4A28;
+  --text-light: #F0E8D5;
+  --accent: #8B6340;
+  --shadow: rgba(61, 31, 8, 0.18);
+}
 
-  body {
-    margin: 0;
-  }
+[data-theme="dark"] {
+  --bg-primary: #1A1208;
+  --bg-secondary: #231A0E;
+  --bg-input: #2C2014;
+  --bg-page: #120D06;
+  --border: #8B6340;
+  --border-light: #5A3A1A;
+  --text-primary: #F0E8D5;
+  --text-secondary: #C8A878;
+  --text-muted: #A07850;
+  --text-light: #1A0E06;
+  --accent: #C8A878;
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #0d0b08;
+  font-family: 'EB Garamond', Georgia, serif;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+app-root {
+  display: contents;
+  width: 100%;
+  min-height: 100vh;
 }

@@ -1,95 +1,65 @@
+<app-navbar></app-navbar>
+
 <div class="fw">
-  <div class="fh">
-    <div>
-      <h1 class="flogo">Forge Fine Auctions</h1>
-      <p class="ftag">&#x2715; Est. MMXXVI &#x2715; Live Auction</p>
-    </div>
+  <div class="fg">
 
-    <div class="fh-right">
-      <div class="ffunds">
-        <p class="ffunds-l">Available Funds</p>
-        <p class="ffunds-v">₹{{ availableFunds | number:'1.2-2' }}</p>
-      </div>
+    <!-- MAIN CARD -->
+    <div class="fm">
 
-      <div class="profile-dropdown">
-        <button class="avatar-btn" (click)="toggleDropdown()">
-          <span class="avatar-initials">{{ userInitials }}</span>
-        </button>
+      <!-- TOP: Image + Details side by side -->
+      <div class="fm-top">
 
-        <div class="dropdown-menu" *ngIf="isDropdownOpen">
-          <div class="dropdown-inner">
-            <div class="dp-email-row">
-              <span class="dp-email">{{ userEmail }}</span>
-              <button class="dp-close" (click)="isDropdownOpen = false">&#x2715;</button>
+        <!-- LEFT: Image -->
+        <div class="fimg-wrap" *ngIf="auctionImageUrl">
+          <img [src]="auctionImageUrl" alt="Auction Item" class="fimg">
+        </div>
+        <div class="fimg-placeholder" *ngIf="!auctionImageUrl">
+          <span>&#x2737;</span>
+        </div>
+
+        <!-- RIGHT: Details -->
+        <div class="fm-info">
+          <div class="fmeta">
+            <span class="fbadge">&#x2737; Live Lot</span>
+            <span class="fref">Ref: {{ auctionRef }}</span>
+          </div>
+
+          <div class="ftimer" [ngClass]="{'ftimer-urgent': isUrgent}">
+            <span class="ftimer-lbl">ENDS IN:</span>
+            <span class="ftimer-val">{{ remainingTime }}</span>
+          </div>
+
+          <div class="forn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</div>
+          <h2 class="ftitle">{{ auctionTitle }}</h2>
+          <p class="fdesc">{{ auctionDescription }}</p>
+
+          <div class="fstats">
+            <div class="fstat fstat--l">
+              <p class="fstat-lbl">Current Highest Bid</p>
+              <p class="fstat-v">₹{{ currentBid | number }}</p>
             </div>
-            <div class="dp-avatar-section">
-              <div class="dp-avatar-large">
-                <span class="dp-avatar-large-text">{{ userInitials }}</span>
-              </div>
-              <p class="dp-name">{{ userName }}</p>
-              <p class="dp-tag">&#x2715; Authorized Bidder &#x2715;</p>
-              <button class="dp-manage-btn" routerLink="/profile" (click)="isDropdownOpen = false">
-                &#x2767; Manage Profile
-              </button>
-            </div>
-            <div class="dp-options">
-              <a routerLink="/settings" class="dp-item" (click)="isDropdownOpen = false">
-                <span class="dp-item-icon">&#x2737;</span> Settings
-              </a>
-              <div class="dp-divider"></div>
-              <a class="dp-item dp-item--logout" (click)="logout()">
-                <span class="dp-item-icon">&#x2715;</span> Logout
-              </a>
+            <div class="fstat">
+              <p class="fstat-lbl">Current Leader</p>
+              <p class="fstat-v2">
+                {{ (highestBidder && highestBidder !== 'Waiting...') ? highestBidder : 'Waiting for Bids...' }}
+              </p>
             </div>
           </div>
+
+          <button class="fbtn"
+            (click)="placeBid()"
+            [disabled]="!(wsService.connectionStatus$ | async)"
+            [style.opacity]="(wsService.connectionStatus$ | async) ? '1' : '0.5'">
+            &#x2192;&nbsp;
+            {{ (wsService.connectionStatus$ | async)
+                ? 'Raise Bid to ₹' + (currentBid + 500 | number)
+                : 'Connecting to Engine...' }}
+          </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="fg">
-    <div class="fm">
-      <div class="fmeta">
-        <span class="fbadge">&#x2737; Live Lot</span>
-
-        <div class="ftimer" [ngClass]="{'ftimer-urgent': isUrgent}">
-          <span style="font-size: 10px; letter-spacing: 2px; color: #8b7355;">ENDS IN:</span>
-          <span style="font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; margin-left: 8px;">
-            {{ remainingTime }}
-          </span>
-        </div>
-
-        <span class="fref">Ref: {{ auctionRef }}</span>
-      </div>
-
-      <div class="forn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</div>
-      <h2 class="ftitle">{{ auctionTitle }}</h2>
-      <p class="fdesc">{{ auctionDescription }}</p>
-
-      <div class="fstats">
-        <div class="fstat fstat--l">
-          <p class="fstat-lbl">Current Highest Bid</p>
-          <p class="fstat-v">₹{{ currentBid | number }}</p>
-        </div>
-        <div class="fstat">
-          <p class="fstat-lbl">Current Leader</p>
-          <p class="fstat-v2">
-            {{ (highestBidder && highestBidder !== 'Waiting...') ? highestBidder : 'Waiting for Bids...' }}
-          </p>
-        </div>
-      </div>
-
-      <button class="fbtn"
-        (click)="placeBid()"
-        [disabled]="!(wsService.connectionStatus$ | async)"
-        [style.opacity]="(wsService.connectionStatus$ | async) ? '1' : '0.5'">
-        &#x2192;&nbsp;
-        {{ (wsService.connectionStatus$ | async)
-            ? 'Raise Bid to ₹' + (currentBid + 500 | number)
-            : 'Connecting to Engine...' }}
-      </button>
-    </div>
-
+    <!-- ACTIVITY LOG -->
     <div class="fl">
       <h3 class="fl-title"><span class="fl-dot"></span>Activity Log</h3>
       <div class="ffeed">
@@ -97,9 +67,7 @@
           <div class="fetop">
             <div class="femsg">
               <span *ngIf="!msg.message" class="feamt">₹{{ (msg.bidAmount || msg.newPrice) | number }}</span>
-              <span *ngIf="!msg.message">
-                placed by {{ msg.bidderName || msg.bidder }}
-              </span>
+              <span *ngIf="!msg.message"> placed by {{ msg.bidderName || msg.bidder }}</span>
               <span *ngIf="msg.message" class="fesys">{{ msg.message }}</span>
             </div>
             <p class="fetime">{{ msg.timestamp }}</p>
@@ -107,6 +75,7 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <div class="ffooter">

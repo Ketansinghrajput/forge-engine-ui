@@ -3,7 +3,7 @@
 :host { display: block; }
 
 .ca-wrapper {
-  background: #F0E8D5;
+  background: var(--bg-page);
   min-height: 100vh;
   padding: 3rem 2.5rem;
   font-family: 'EB Garamond', Georgia, serif;
@@ -14,8 +14,8 @@
 }
 
 .ca-card {
-  background: #FAF5EB;
-  border: 1.5px solid #8B6340;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border);
   padding: 3rem;
   width: 100%;
   max-width: 680px;
@@ -26,14 +26,13 @@
   content: '';
   position: absolute;
   inset: 8px;
-  border: 0.5px solid #B8956A;
+  border: 0.5px solid var(--border-light);
   pointer-events: none;
 }
 
-/* HEADER */
 .ca-eyebrow {
   text-align: center;
-  color: #8B6340;
+  color: var(--accent);
   font-size: 1.1rem;
   letter-spacing: 0.5em;
   margin-bottom: 0.5rem;
@@ -43,7 +42,7 @@
   font-family: 'Playfair Display', serif;
   font-size: 2.2rem;
   font-weight: 600;
-  color: #1A0E06;
+  color: var(--text-primary);
   text-align: center;
   margin: 0 0 0.4rem;
 }
@@ -52,12 +51,11 @@
   font-family: 'EB Garamond', serif;
   font-size: 1rem;
   font-style: italic;
-  color: #5A3A1A;
+  color: var(--text-secondary);
   text-align: center;
   margin-bottom: 2.5rem;
 }
 
-/* MESSAGES */
 .ca-success {
   background: #EAF4EA;
   border: 1.5px solid #5A8A5A;
@@ -84,7 +82,6 @@
   margin-bottom: 1.5rem;
 }
 
-/* FORM */
 .ca-field {
   display: flex;
   flex-direction: column;
@@ -98,25 +95,23 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 700;
-  color: #4A2C10;
+  color: var(--text-secondary);
 }
 
 .ca-input {
-  background: #F5EFE0;
-  border: 1.5px solid #8B6340;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border);
   padding: 0.85rem 1rem;
   font-family: 'EB Garamond', serif;
   font-size: 1rem;
-  color: #1A0E06;
+  color: var(--text-primary);
   outline: none;
   transition: border-color 0.2s;
   width: 100%;
   box-sizing: border-box;
 }
 
-.ca-input:focus {
-  border-color: #3D1F08;
-}
+.ca-input:focus { border-color: var(--text-primary); }
 
 .ca-textarea {
   resize: vertical;
@@ -129,12 +124,11 @@
   gap: 1.2rem;
 }
 
-/* BUTTON */
 .ca-btn {
   width: 100%;
   margin-top: 0.5rem;
-  background: #3D1F08;
-  color: #F0E8D5;
+  background: var(--text-primary);
+  color: var(--text-light);
   border: none;
   padding: 1.1rem;
   font-family: 'Courier Prime', monospace;
@@ -146,8 +140,5 @@
   font-weight: 700;
 }
 
-.ca-btn:hover:not(:disabled) { background: #5A3010; }
-.ca-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+.ca-btn:hover:not(:disabled) { background: var(--text-secondary); }
+.ca-btn:disabled { opacity: 0.6; cursor: not-allowed; }

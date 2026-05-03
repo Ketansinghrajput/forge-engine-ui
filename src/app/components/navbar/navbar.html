@@ -55,6 +55,11 @@
             </button>
           </div>
 
+<a class="fn-dp-item" (click)="toggleTheme(); isDropdownOpen = false">
+  <span class="fn-dp-item-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+  {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
+</a>
+
           <div class="fn-dp-options">
             <a routerLink="/settings" class="fn-dp-item" (click)="isDropdownOpen = false">
               <span class="fn-dp-item-icon">&#x2737;</span> Settings
