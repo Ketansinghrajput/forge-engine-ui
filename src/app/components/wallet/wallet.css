@@ -3,7 +3,7 @@
 :host { display: block; }
 
 .wt-wrapper {
-  background: #F0E8D5;
+  background: var(--bg-page);
   min-height: 100vh;
   padding: 3rem 2.5rem;
   font-family: 'EB Garamond', Georgia, serif;
@@ -13,8 +13,8 @@
 }
 
 .wt-card {
-  background: #FAF5EB;
-  border: 1.5px solid #8B6340;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border);
   padding: 3rem;
   width: 100%;
   max-width: 600px;
@@ -26,13 +26,13 @@
   content: '';
   position: absolute;
   inset: 8px;
-  border: 0.5px solid #B8956A;
+  border: 0.5px solid var(--border-light);
   pointer-events: none;
 }
 
 .wt-eyebrow {
   text-align: center;
-  color: #8B6340;
+  color: var(--accent);
   font-size: 1.1rem;
   letter-spacing: 0.5em;
   margin-bottom: 0.5rem;
@@ -42,7 +42,7 @@
   font-family: 'Playfair Display', serif;
   font-size: 2.2rem;
   font-weight: 600;
-  color: #1A0E06;
+  color: var(--text-primary);
   text-align: center;
   margin: 0 0 0.4rem;
 }
@@ -51,14 +51,14 @@
   font-family: 'EB Garamond', serif;
   font-size: 1rem;
   font-style: italic;
-  color: #5A3A1A;
+  color: var(--text-secondary);
   text-align: center;
   margin-bottom: 2rem;
 }
 
 .wt-balance {
-  background: #EDE0C8;
-  border: 1.5px solid #8B6340;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
   padding: 1rem 1.5rem;
   display: flex;
   justify-content: space-between;
@@ -71,14 +71,14 @@
   font-size: 0.65rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #4A2C10;
+  color: var(--text-secondary);
   font-weight: 700;
 }
 
 .wt-balance-v {
   font-family: 'Playfair Display', serif;
   font-size: 1.6rem;
-  color: #3D1F08;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -87,7 +87,7 @@
   font-size: 0.65rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #4A2C10;
+  color: var(--text-secondary);
   font-weight: 700;
   margin-bottom: 0.8rem;
 }
@@ -100,24 +100,24 @@
 }
 
 .wt-preset-btn {
-  background: #F5EFE0;
-  border: 1.5px solid #8B6340;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border);
   padding: 0.7rem 0.3rem;
   font-family: 'Courier Prime', monospace;
   font-size: 0.65rem;
   letter-spacing: 0.08em;
   font-weight: 700;
-  color: #3D1F08;
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.15s;
   text-align: center;
 }
 
-.wt-preset-btn:hover { background: #EDE0C8; }
+.wt-preset-btn:hover { background: var(--bg-input); }
 .wt-preset-btn--active {
-  background: #3D1F08;
-  color: #F0E8D5;
-  border-color: #3D1F08;
+  background: var(--text-primary);
+  color: var(--text-light);
+  border-color: var(--text-primary);
 }
 
 .wt-field {
@@ -133,23 +133,23 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 700;
-  color: #4A2C10;
+  color: var(--text-secondary);
 }
 
 .wt-input {
-  background: #F5EFE0;
-  border: 1.5px solid #8B6340;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border);
   padding: 0.85rem 1rem;
   font-family: 'EB Garamond', serif;
   font-size: 1rem;
-  color: #1A0E06;
+  color: var(--text-primary);
   outline: none;
   width: 100%;
   box-sizing: border-box;
   transition: border-color 0.2s;
 }
 
-.wt-input:focus { border-color: #3D1F08; }
+.wt-input:focus { border-color: var(--text-primary); }
 
 .wt-select { cursor: pointer; }
 
@@ -167,14 +167,14 @@
 }
 
 .wt-method-btn {
-  background: #F5EFE0;
-  border: 1.5px solid #8B6340;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border);
   padding: 0.9rem 1.2rem;
   font-family: 'Courier Prime', monospace;
   font-size: 0.68rem;
   letter-spacing: 0.12em;
   font-weight: 700;
-  color: #3D1F08;
+  color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -183,18 +183,18 @@
   text-align: left;
 }
 
-.wt-method-btn:hover { background: #EDE0C8; }
+.wt-method-btn:hover { background: var(--bg-input); }
 .wt-method-btn--active {
-  background: #3D1F08;
-  color: #F0E8D5;
-  border-color: #3D1F08;
+  background: var(--text-primary);
+  color: var(--text-light);
+  border-color: var(--text-primary);
 }
 
 .wt-method-icon { font-size: 1rem; }
 
 .wt-summary {
-  background: #EDE0C8;
-  border: 1.5px solid #8B6340;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
   padding: 1rem 1.5rem;
   display: flex;
   justify-content: space-between;
@@ -207,21 +207,21 @@
   font-size: 0.65rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #4A2C10;
+  color: var(--text-secondary);
   font-weight: 700;
 }
 
 .wt-summary-v {
   font-family: 'Playfair Display', serif;
   font-size: 1.4rem;
-  color: #3D1F08;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 .wt-btn {
   width: 100%;
-  background: #3D1F08;
-  color: #F0E8D5;
+  background: var(--text-primary);
+  color: var(--text-light);
   border: none;
   padding: 1.1rem;
   font-family: 'Courier Prime', monospace;
@@ -233,7 +233,7 @@
   font-weight: 700;
 }
 
-.wt-btn:hover:not(:disabled) { background: #5A3010; }
+.wt-btn:hover:not(:disabled) { background: var(--text-secondary); }
 .wt-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .wt-success {
@@ -253,7 +253,7 @@
 }
 
 .wt-success-link {
-  color: #3D1F08;
+  color: var(--text-primary);
   text-decoration: none;
   font-size: 0.7rem;
   letter-spacing: 0.18em;

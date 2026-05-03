@@ -1,5 +1,5 @@
 /* ── LOGIN PAGE BODY OVERRIDE ── */
-body:has(app-login) {
+body:has(app-register) {
   background: #0d0b08 !important;
   overflow: hidden !important;
   display: flex;
@@ -9,7 +9,7 @@ body:has(app-login) {
   position: relative;
 }
 
-body:has(app-login) app-root {
+body:has(app-register) app-root {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,15 +18,13 @@ body:has(app-login) app-root {
   position: relative;
 }
 
-/* ── PARTICLE CANVAS ── */
-#particle-canvas {
+#register-particle-canvas {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
 }
 
-/* ── RADIAL GLOW ── */
 .radial-glow {
   position: fixed;
   width: 700px;
@@ -40,35 +38,6 @@ body:has(app-login) app-root {
   pointer-events: none;
 }
 
-/* ── FLOATING TEXT ── */
-.float-stage {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: visible;
-  pointer-events: none;
-  width: 100vw;
-  height: 100vh;
-}
-
-.float-item {
-  position: absolute;
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  color: #b8942a;
-  white-space: nowrap;
-  will-change: transform, opacity;
-  bottom: -10%;
-}
-
-@keyframes floatDrift {
-  0%   { bottom: -10%; opacity: 0; }
-  8%   { opacity: 1; }
-  92%  { opacity: 1; }
-  100% { bottom: 110%; opacity: 0; }
-}
-
-/* ── GRID LINES ── */
 .grid-overlay {
   position: fixed;
   inset: 0;
@@ -80,7 +49,6 @@ body:has(app-login) app-root {
   background-size: 60px 60px;
 }
 
-/* ── SCANLINES ── */
 .scanlines {
   position: fixed;
   inset: 0;
@@ -95,7 +63,6 @@ body:has(app-login) app-root {
   );
 }
 
-/* ── SIDE GHOST TEXT ── */
 .side-lot {
   position: fixed;
   font-family: 'Playfair Display', serif;
@@ -130,7 +97,6 @@ body:has(app-login) app-root {
   letter-spacing: 0.2em;
 }
 
-/* ── TOP BADGE ── */
 .lot-badge {
   position: fixed;
   top: 5vh;
@@ -146,7 +112,6 @@ body:has(app-login) app-root {
   white-space: nowrap;
 }
 
-/* ── BOTTOM STRIP ── */
 .bottom-strip {
   position: fixed;
   bottom: 4vh;
@@ -162,7 +127,6 @@ body:has(app-login) app-root {
   pointer-events: none;
 }
 
-/* ── LOGIN WRAPPER ── */
 .login-wrapper {
   position: relative;
   z-index: 10;
@@ -174,13 +138,11 @@ body:has(app-login) app-root {
   padding: 2rem 0;
 }
 
-/* ── CARD WRAPPER ── */
 .card-wrap {
   position: relative;
   width: 440px;
 }
 
-/* ── CORNER ORNAMENTS ── */
 .corner {
   position: absolute;
   width: 28px;
@@ -195,7 +157,6 @@ body:has(app-login) app-root {
 .corner-bl { bottom: -1px; left: -1px;  border-width: 0 0 2px 2px; }
 .corner-br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
 
-/* ── MAIN CARD ── */
 .login-card {
   background: rgba(26, 20, 12, 0.97);
   border: 1px solid rgba(184, 148, 42, 0.35);
@@ -220,7 +181,6 @@ body:has(app-login) app-root {
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ── HEADER ── */
 .header-title {
   font-family: 'Playfair Display', serif;
   font-size: 1.65rem;
@@ -255,15 +215,11 @@ body:has(app-login) app-root {
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* ── FORM GROUPS ── */
 .form-group {
   text-align: left;
   margin-bottom: 1.6rem;
   animation: fadeSlideUp 0.7s both;
 }
-
-.form-group:nth-child(1) { animation-delay: 0.45s; }
-.form-group:nth-child(2) { animation-delay: 0.55s; }
 
 @keyframes fadeSlideUp {
   0%   { opacity: 0; transform: translateY(10px); }
@@ -306,7 +262,6 @@ body:has(app-login) app-root {
   box-shadow: 0 0 0 3px rgba(184, 148, 42, 0.08), inset 0 1px 3px rgba(0,0,0,0.4);
 }
 
-/* ── SUBMIT BUTTON ── */
 .btn-login {
   width: 100%;
   margin-top: 0.5rem;
@@ -325,7 +280,6 @@ body:has(app-login) app-root {
   z-index: 20;
   overflow: hidden;
   transition: background-position 0.4s, transform 0.15s;
-  animation: fadeSlideUp 0.7s 0.65s both;
   pointer-events: all;
 }
 
@@ -343,7 +297,6 @@ body:has(app-login) app-root {
 .btn-login:active        { transform: scale(0.985); }
 .btn-login:disabled      { opacity: 0.45; cursor: not-allowed; }
 
-/* ── FOOTER NOTE ── */
 .footer-note {
   font-family: 'Courier Prime', monospace;
   font-size: 0.6rem;
@@ -352,7 +305,17 @@ body:has(app-login) app-root {
   margin-top: 2rem;
   text-transform: uppercase;
   font-weight: 700;
-  animation: fadeSlideUp 0.7s 0.75s both;
+}
+
+.error-note {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  color: #c8602a;
+  font-weight: 700;
+  text-align: left;
+  margin-bottom: 0.5rem;
+  margin-top: 0.3rem;
 }
 
 .fn-switch {
@@ -376,13 +339,4 @@ body {
   margin: 0;
   font-family: 'EB Garamond', Georgia, serif;
   background: #0d0b08;
-}
-
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px rgba(15, 11, 5, 0.95) inset !important;
-  -webkit-text-fill-color: #e8d5a0 !important;
-  caret-color: #e8d5a0;
 }

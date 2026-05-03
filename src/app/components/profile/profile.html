@@ -1,0 +1,52 @@
+<div class="fp-wrapper">
+  <div class="fp-container">
+
+    <div class="fp-header">
+      <a routerLink="/auctions" class="fp-back">&#x2190; Back to Auctions</a>
+      <h1 class="fp-title">Manage Profile</h1>
+      <p class="fp-subtitle">&#x2715; Authorized Bidder &#x2715;</p>
+    </div>
+
+    <div class="fp-avatar-section">
+      <div class="fp-avatar">
+        <span class="fp-avatar-text">{{ userInitials }}</span>
+      </div>
+      <p class="fp-email">{{ profile.email }}</p>
+    </div>
+
+    <div class="fp-card">
+      <h2 class="fp-card-title">&#x2737; Basic Information</h2>
+      <div class="fp-field">
+        <label class="fp-label">Full Name</label>
+        <input class="fp-input" type="text" [(ngModel)]="fullName" placeholder="Your full name" />
+      </div>
+      <div class="fp-field">
+        <label class="fp-label">Email Address</label>
+        <input class="fp-input fp-input--readonly" type="email" [value]="profile.email" readonly />
+      </div>
+      <p class="fp-msg" *ngIf="profileMsg">&#x2713; {{ profileMsg }}</p>
+      <p class="fp-err" *ngIf="profileError">&#x2715; {{ profileError }}</p>
+      <button class="fp-btn" (click)="updateProfile()">&#x2767; Save Changes</button>
+    </div>
+
+    <div class="fp-card">
+      <h2 class="fp-card-title">&#x25C6; Change Password</h2>
+      <div class="fp-field">
+        <label class="fp-label">Current Password</label>
+        <input class="fp-input" type="password" [(ngModel)]="currentPassword" placeholder="••••••••" />
+      </div>
+      <div class="fp-field">
+        <label class="fp-label">New Password</label>
+        <input class="fp-input" type="password" [(ngModel)]="newPassword" placeholder="••••••••" />
+      </div>
+      <div class="fp-field">
+        <label class="fp-label">Confirm New Password</label>
+        <input class="fp-input" type="password" [(ngModel)]="confirmPassword" placeholder="••••••••" />
+      </div>
+      <p class="fp-msg" *ngIf="passwordMsg">&#x2713; {{ passwordMsg }}</p>
+      <p class="fp-err" *ngIf="passwordError">&#x2715; {{ passwordError }}</p>
+      <button class="fp-btn" (click)="changePassword()">&#x2767; Update Password</button>
+    </div>
+
+  </div>
+</div>

@@ -6,11 +6,12 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Navbar } from '../navbar/navbar';
 
 @Component({
   selector: 'app-auction-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, Navbar],
   templateUrl: './auction-detail.html',
   styleUrl: './auction-detail.css'
 })
@@ -23,6 +24,7 @@ export class AuctionDetail implements OnInit, OnDestroy {
   auctionTitle: string = '';
   auctionDescription: string = '';
   auctionRef: string = '';
+  auctionImageUrl: string = '';
   feed: any[] = [];
 
   remainingTime: string = '';
@@ -80,7 +82,7 @@ export class AuctionDetail implements OnInit, OnDestroy {
     }, 1000);
 
     try {
-      this.wsService.connect(this.auctionId); // 👈 dynamic auctionId
+      this.wsService.connect(this.auctionId);
       this.wsSubscription = this.wsService.updates$.subscribe((msg: any) => {
 
         if (this.feed.length > 0 && this.feed[0].newPrice === msg.newPrice) {
@@ -124,6 +126,7 @@ export class AuctionDetail implements OnInit, OnDestroy {
           this.endTime = new Date(state.endTime);
           this.auctionTitle = state.title || 'Live Auction';
           this.auctionDescription = state.description || '';
+          this.auctionImageUrl = state.imageUrl || '';
           this.cdr.detectChanges();
         },
         error: (err) => {
