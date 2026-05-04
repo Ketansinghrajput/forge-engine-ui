@@ -1,0 +1,93 @@
+<app-navbar></app-navbar>
+
+<div class="mb-wrap">
+
+  <div class="mb-header">
+    <div class="mb-header__orn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</div>
+    <h1 class="mb-header__title">My Bids</h1>
+    <p class="mb-header__sub">Your complete bidding history across all lots</p>
+  </div>
+
+  <div class="mb-loading" *ngIf="isLoading">
+    <span class="mb-loading__dot"></span>
+    <span class="mb-loading__dot"></span>
+    <span class="mb-loading__dot"></span>
+  </div>
+
+  <div class="mb-error" *ngIf="error">{{ error }}</div>
+
+  <div class="mb-empty" *ngIf="!isLoading && !error && bids.length === 0">
+    <div class="mb-empty__icon">⬡</div>
+    <p class="mb-empty__text">You haven't placed any bids yet.</p>
+    <a routerLink="/auctions" class="mb-empty__cta">&#x2192; Browse Live Auctions</a>
+  </div>
+
+  <div class="mb-grid" *ngIf="!isLoading && bids.length > 0">
+    <div class="mb-card" *ngFor="let group of groupedBids"
+         [ngClass]="{
+           'mb-card--won': isWinner(group),
+           'mb-card--expired': group.auctionStatus === 'EXPIRED'
+         }">
+
+      <div class="mb-card__head">
+        <div class="mb-card__img-wrap">
+          <img *ngIf="group.imageUrl" [src]="group.imageUrl" class="mb-card__img" alt="Lot">
+          <div *ngIf="!group.imageUrl" class="mb-card__img-placeholder">&#x2737;</div>
+        </div>
+        <div class="mb-card__meta">
+          <span class="mb-card__status"
+                [ngClass]="{
+                  'mb-card__status--live': group.auctionStatus === 'ACTIVE',
+                  'mb-card__status--won': isWinner(group),
+                  'mb-card__status--closed': group.auctionStatus !== 'ACTIVE'
+                }">
+            {{ isWinner(group) ? '✦ WON' : ('&#x2737; ' + getStatusLabel(group.auctionStatus)) }}
+          </span>
+          <span class="mb-card__ref">LOT #{{ group.auctionId }}</span>
+        </div>
+        <h2 class="mb-card__title">{{ group.auctionTitle }}</h2>
+
+        <div class="mb-winner-bar" *ngIf="isWinner(group)">
+          <span class="mb-winner-bar__icon">✦</span>
+          <span class="mb-winner-bar__text">Congratulations — You won this lot</span>
+        </div>
+      </div>
+
+      <div class="mb-table">
+        <div class="mb-table__header">
+          <span>Amount</span>
+          <span>Placed At</span>
+          <span>Result</span>
+        </div>
+        <div class="mb-table__row" *ngFor="let bid of group.bids">
+          <span class="mb-table__amount">₹{{ bid.amount | number }}</span>
+          <span class="mb-table__time">{{ bid.placedAt | date:'dd MMM, hh:mm a' }}</span>
+          <span class="mb-table__result"
+                [ngClass]="{
+                  'mb-table__result--won': bid.successful,
+                  'mb-table__result--lost': !bid.successful && group.auctionStatus !== 'ACTIVE'
+                }">
+            {{ bid.successful ? '✦ Won' : (group.auctionStatus === 'ACTIVE' ? '— Active' : '✕ Outbid') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="mb-card__footer">
+        <button class="mb-btn" (click)="enterAuction(group.auctionId)"
+                *ngIf="group.auctionStatus === 'ACTIVE'">
+          &#x2192; Enter Auction Room
+        </button>
+        <span class="mb-card__highest" *ngIf="group.auctionStatus !== 'ACTIVE'">
+          Your highest: ₹{{ (group.bids[0]?.amount | number) }}
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mb-footer">
+    <div class="mb-footer__orn">&#x2665;</div>
+    Forge Fine Auctions &copy; 2026 &nbsp;&#x2715;&nbsp; London &nbsp;&#x2715;&nbsp; New York &nbsp;&#x2715;&nbsp; Geneva
+  </div>
+
+</div>

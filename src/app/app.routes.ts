@@ -6,6 +6,7 @@ import { CreateAuctionComponent } from './components/create-auction/create-aucti
 import { WalletComponent } from './components/wallet/wallet';
 import { ProfileComponent } from './components/profile/profile';
 import { RegisterComponent } from './components/register/register';
+import { MyBids } from './components/my-bids/my-bids';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -16,4 +17,5 @@ export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'register', component: RegisterComponent },
   { path: 'profile', component: ProfileComponent },
+  { path: 'my-bids', component: MyBids }
 ];

@@ -17,7 +17,9 @@
   width: 100%;
 }
 
-/* MAIN CARD */
+/* ============================================================
+   MAIN CARD
+   ============================================================ */
 .fm {
   background: var(--bg-primary);
   border: 1.5px solid var(--border);
@@ -34,7 +36,6 @@
   z-index: 0;
 }
 
-/* TOP SECTION: image left, details right */
 .fm-top {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -42,7 +43,9 @@
   align-items: start;
 }
 
-/* IMAGE */
+/* ============================================================
+   IMAGE
+   ============================================================ */
 .fimg-wrap {
   width: 100%;
   aspect-ratio: 4/3;
@@ -73,7 +76,9 @@
   color: var(--border);
 }
 
-/* INFO PANEL */
+/* ============================================================
+   INFO PANEL
+   ============================================================ */
 .fm-info {
   display: flex;
   flex-direction: column;
@@ -84,7 +89,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.2rem;
 }
 
 .fbadge {
@@ -98,6 +103,12 @@
   font-weight: 700;
 }
 
+.fbadge-closed {
+  border-color: var(--border) !important;
+  color: var(--text-secondary) !important;
+  background: transparent !important;
+}
+
 .fref {
   font-family: 'Courier Prime', monospace;
   font-size: 0.68rem;
@@ -105,41 +116,184 @@
   font-weight: 700;
 }
 
-/* TIMER */
-.ftimer {
+/* ============================================================
+   TIMER PILL — active state
+   ============================================================ */
+.ftimer-pill {
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 0.4rem;
+  align-items: stretch;
+  border: 1.5px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+  width: fit-content;
 }
 
-.ftimer-lbl {
+.ftimer-pill__label {
   font-family: 'Courier Prime', monospace;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   letter-spacing: 0.2em;
-  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 7px 11px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
-.ftimer-val {
+.ftimer-pill__value {
   font-family: 'Courier New', monospace;
-  font-size: 1.4rem;
-  font-weight: bold;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   color: var(--text-primary);
+  background: var(--bg-input);
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
 }
 
-.ftimer-urgent .ftimer-val {
-  color: #a52a2a;
-  animation: blink 1s infinite;
+/* Urgent: <1 min left */
+.ftimer-pill--urgent .ftimer-pill__label {
+  background: #8b1a1a;
+  color: #fff;
 }
 
-@keyframes blink { 50% { opacity: 0.5; } }
+.ftimer-pill--urgent .ftimer-pill__value {
+  color: #8b1a1a;
+  animation: urgentBlink 0.9s ease-in-out infinite;
+}
 
+@keyframes urgentBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* ============================================================
+   WINNER BANNER — completed state
+   ============================================================ */
+.fwinner-banner {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid #b8952a;
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+  animation: bannerSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  position: relative;
+}
+
+@keyframes bannerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+/* Gold accent block */
+.fwinner-banner__icon {
+  background: #b8952a;
+  color: var(--bg-primary);
+  font-size: 0.9rem;
+  padding: 10px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+
+/* Text content */
+.fwinner-banner__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 14px;
+  background: #b8952a0d;
+  flex: 1;
+  gap: 1px;
+}
+
+.fwinner-banner__label {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #b8952a;
+  font-weight: 700;
+}
+
+.fwinner-banner__name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #c9a84c;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+/* Decorative right block */
+.fwinner-banner__gavel {
+  background: #b8952a0d;
+  border-left: 1px solid #b8952a44;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #b8952a55;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   UNSOLD BANNER — expired state
+   ============================================================ */
+.funsold-banner {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+}
+
+.funsold-banner__icon {
+  background: var(--text-secondary);
+  color: var(--bg-primary);
+  font-size: 0.7rem;
+  padding: 10px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.funsold-banner__text {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  background: var(--bg-input);
+}
+
+/* ============================================================
+   ORNAMENT + TITLE + DESC
+   ============================================================ */
 .forn {
   text-align: center;
   color: var(--accent);
   font-size: 1rem;
   letter-spacing: 0.5em;
-  margin: 0.2rem 0;
+  margin: 0.1rem 0;
 }
 
 .ftitle {
@@ -156,13 +310,15 @@
   font-size: 0.95rem;
   line-height: 1.65;
   font-style: italic;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* STATS */
+/* ============================================================
+   STATS GRID
+   ============================================================ */
 .fstats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -203,26 +359,112 @@
   margin: 0;
 }
 
-/* BID BUTTON */
+/* ============================================================
+   BID INPUT + BUTTON
+   ============================================================ */
+.fbid-action {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.finput-group {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-bottom: none;
+  background: var(--bg-input);
+}
+
+.fcurrency {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  padding: 0 0 0 12px;
+  pointer-events: none;
+}
+
+.fbid-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 10px 12px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.fbid-input::placeholder {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* Remove number input arrows */
+.fbid-input::-webkit-outer-spin-button,
+.fbid-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.fbid-input[type=number] { -moz-appearance: textfield; }
+
 .fbtn {
   width: 100%;
-background: #3D1F08   ;
-  color: #72581b;
-  border: none;
-  padding: 1rem;
+  background: #3D1F08;
+  color: #c9a84c;
+  border: 1.5px solid var(--border);
+  padding: 0.95rem 1rem;
   font-family: 'Courier Prime', monospace;
   font-size: 0.72rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
   font-weight: 700;
 }
 
-.fbtn:hover:not(:disabled) { background: var(--text-secondary); }
-.fbtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.fbtn:hover:not(:disabled) {
+  background: #c9a84c;
+  color: #1a0e04;
+}
 
-/* ACTIVITY LOG */
+.fbtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   SETTLED MESSAGE
+   ============================================================ */
+.fsold-msg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #b8952a;
+  border: 1px solid #b8952a33;
+  padding: 10px 14px;
+  background: #b8952a08;
+}
+
+.fsold-msg__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b8952a;
+  flex-shrink: 0;
+  animation: settlePulse 2s ease-in-out infinite;
+}
+
+@keyframes settlePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* ============================================================
+   ACTIVITY LOG
+   ============================================================ */
 .fl {
   background: var(--bg-primary);
   border: 1.5px solid var(--border);
@@ -299,7 +541,9 @@ background: #3D1F08   ;
   font-weight: 700;
 }
 
-/* FOOTER */
+/* ============================================================
+   FOOTER
+   ============================================================ */
 .ffooter {
   margin-top: 1.5rem;
   padding-top: 1rem;
@@ -319,6 +563,9 @@ background: #3D1F08   ;
   margin-bottom: 0.4rem;
 }
 
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: var(--border); }
 ::-webkit-scrollbar-track { background: var(--bg-input); }

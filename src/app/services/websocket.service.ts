@@ -2,11 +2,14 @@ import { Injectable } from '@angular/core';
 import { Subject, BehaviorSubject } from 'rxjs';
 import SockJS from 'sockjs-client';
 import { over, Client, Subscription } from 'stompjs';
+import { WalletService } from './wallet.service'; // 🔥 ADDED THIS
 
 export interface AuctionUpdate {
   auctionId: number;
   newPrice: number;
   bidder: string;
+  availableFunds?: number; // 🔥 ADDED THIS
+  bidderName?: string;     // 🔥 ADDED THIS
   endTime?: string;
   timestamp: string;
 }
@@ -21,7 +24,8 @@ export class WebsocketService {
   public connectionStatus$ = new BehaviorSubject<boolean>(false);
   public updates$ = new Subject<AuctionUpdate>();
 
-  constructor() {}
+  // 🔥 INJECTED WalletService here
+  constructor(private walletService: WalletService) {}
 
   connect(auctionId: number = 1) {
     const token = localStorage.getItem('token');
@@ -79,12 +83,25 @@ export class WebsocketService {
     }
 
     const topic = `/topic/auctions/${auctionId}`;
-    this.auctionSubscription = this.stompClient.subscribe(topic, (msg) => {
-      if (msg.body) {
-        const data: AuctionUpdate = JSON.parse(msg.body);
-        this.updates$.next(data);
-      }
-    });
+this.auctionSubscription = this.stompClient.subscribe(topic, (msg) => {
+  if (msg.body) {
+    const data: any = JSON.parse(msg.body);
+    this.updates$.next(data);
+
+    const currentUserEmail = localStorage.getItem('userEmail');
+
+    // ✅ Update balance if current user is the new highest bidder
+    if (data.highestBidderEmail === currentUserEmail && data.availableFunds !== undefined) {
+      this.walletService.updateBalance(data.availableFunds);
+    }
+
+    // ✅ If current user was outbid, re-fetch their balance from server
+    // (their locked funds were just released)
+    if (data.highestBidderEmail !== currentUserEmail && data.type === 'BID_PLACED') {
+      this.walletService.refreshProfileAndBalance();
+    }
+  }
+});
     console.log(`Subscribed to topic: ${topic}`);
   }
 

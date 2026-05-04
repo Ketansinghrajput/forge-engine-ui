@@ -34,15 +34,15 @@ export class WalletComponent {
     this.loadBalance();
   }
 
-  loadBalance() {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.get<any>('http://localhost:8080/api/v1/wallet/balance', { headers })
-      .subscribe({
-        next: (res) => { this.currentBalance = res.totalBalance; },
-        error: (err) => console.error('Balance load failed', err)
-      });
-  }
+ loadBalance() {
+  const token = localStorage.getItem('token');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  this.http.get<any>('http://localhost:8080/api/v1/wallets/balance', { headers }) // ✅ plural
+    .subscribe({
+      next: (res) => { this.currentBalance = res.balance; }, // ✅ was res.totalBalance
+      error: (err) => console.error('Balance load failed', err)
+    });
+}
 
   get finalAmount(): number {
     return this.customAmount || this.selectedAmount || 0;
@@ -71,22 +71,22 @@ export class WalletComponent {
       const token = localStorage.getItem('token');
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-      this.http.post<any>('http://localhost:8080/api/v1/wallet/topup',
-        { amount: this.finalAmount }, { headers })
-        .subscribe({
-          next: (res) => {
-            this.isProcessing = false;
-            this.currentBalance += this.finalAmount;
-            this.successMsg = `₹${this.finalAmount.toLocaleString('en-IN')} added successfully!`;
-            this.selectedAmount = null;
-            this.customAmount = null;
-            this.selectedMethod = '';
-          },
-          error: (err) => {
-            this.isProcessing = false;
-            this.errorMsg = 'Transaction failed. Please try again.';
-          }
-        });
+   this.http.post<any>('http://localhost:8080/api/v1/wallets/topup', // ✅ plural
+  { amount: this.finalAmount }, { headers })
+  .subscribe({
+    next: (res) => {
+      this.isProcessing = false;
+      this.currentBalance = res.balance; // ✅ use server value, not local addition
+      this.successMsg = `₹${this.finalAmount.toLocaleString('en-IN')} added successfully!`;
+      this.selectedAmount = null;
+      this.customAmount = null;
+      this.selectedMethod = '';
+    },
+    error: (err) => {
+      this.isProcessing = false;
+      this.errorMsg = 'Transaction failed. Please try again.';
+    }
+  });
     }, 2000); // 2s fake processing
   }
 }
