@@ -28,10 +28,12 @@ export class AuctionDetail implements OnInit, OnDestroy {
   auctionRef: string = '';
   auctionImageUrl: string = '';
   feed: any[] = [];
+  errorMsg: string = '';
 
   remainingTime: string = '';
   isUrgent: boolean = false;
   endTime: Date = new Date();
+  startTime: Date = new Date(); // ✅ NEW
 
   isDropdownOpen: boolean = false;
   isBidding: boolean = false;
@@ -115,16 +117,15 @@ export class AuctionDetail implements OnInit, OnDestroy {
           }
         }
 
-        // ✅ KEY FIX: Sync extended endTime from WS broadcast
+        // Sync extended endTime from WS broadcast
         if (msg.endTime) {
           const newEndTime = new Date(msg.endTime);
           if (!isNaN(newEndTime.getTime()) && newEndTime.getTime() > this.endTime.getTime()) {
             console.log("SENSEI DEBUG: Auction extended! New endTime:", msg.endTime);
             this.endTime = newEndTime;
-            this.settlementFetchDone = false; // reset so timer zero triggers fetch again
+            this.settlementFetchDone = false;
             this.retryCount = 0;
 
-            // Restart timer if it was cleared
             if (!this.timerId) {
               this.auctionStatus = 'ACTIVE';
               this.timerId = setInterval(() => {
@@ -167,9 +168,16 @@ export class AuctionDetail implements OnInit, OnDestroy {
           this.auctionImageUrl = state.imageUrl || '';
 
           const backendStatus = (state.status || 'ACTIVE').toUpperCase();
-          this.auctionStatus = backendStatus;
 
-          // ✅ Always sync endTime from backend (catches extensions too)
+          // ✅ Sync startTime
+          if (state.startTime) {
+            const fetchedStartTime = new Date(state.startTime);
+            if (!isNaN(fetchedStartTime.getTime())) {
+              this.startTime = fetchedStartTime;
+            }
+          }
+
+          // ✅ Sync endTime
           if (state.endTime) {
             const fetchedEndTime = new Date(state.endTime);
             if (!isNaN(fetchedEndTime.getTime())) {
@@ -179,32 +187,40 @@ export class AuctionDetail implements OnInit, OnDestroy {
 
           const now = new Date().getTime();
 
-          // ✅ Retry if backend still says ACTIVE but time has passed
-          if (this.endTime.getTime() <= now && backendStatus === 'ACTIVE') {
+          // ✅ Check if auction hasn't started yet
+          if (this.startTime.getTime() > now && backendStatus === 'ACTIVE') {
+            this.auctionStatus = 'UPCOMING';
+          } else {
+            this.auctionStatus = backendStatus;
+          }
+
+          // Retry if backend still says ACTIVE but end time has passed
+          if (this.endTime.getTime() <= now && this.auctionStatus === 'ACTIVE') {
             this.retryCount++;
             if (this.retryCount <= 5) {
               setTimeout(() => this.loadInitialState(), 3000);
             }
           } else {
-            this.retryCount = 0; // reset on clean state
+            this.retryCount = 0;
           }
 
           const winnerRaw = state.highestBidderName || state.highestBidder || '';
           if (winnerRaw) {
             this.highestBidder = this.resolveDisplayName(winnerRaw);
-          } else if (backendStatus === 'COMPLETED') {
+          } else if (this.auctionStatus === 'COMPLETED') {
             this.highestBidder = 'Winner (check results)';
-          } else if (backendStatus === 'EXPIRED') {
+          } else if (this.auctionStatus === 'EXPIRED') {
             this.highestBidder = 'No Winner';
+          } else if (this.auctionStatus === 'UPCOMING') {
+            this.highestBidder = 'Bidding not started';
           } else {
             this.highestBidder = 'No Bids Yet';
           }
 
-          if (backendStatus === 'COMPLETED' || backendStatus === 'EXPIRED') {
+          if (this.auctionStatus === 'COMPLETED' || this.auctionStatus === 'EXPIRED') {
             this.remainingTime = "00h 00m 00s";
             if (this.timerId) { clearInterval(this.timerId); this.timerId = null; }
           } else if (!this.timerId) {
-            // ✅ Restart timer if it was cleared but auction is still active
             this.timerId = setInterval(() => {
               this.updateCountdown();
               this.cdr.detectChanges();
@@ -229,10 +245,18 @@ export class AuctionDetail implements OnInit, OnDestroy {
 
   placeBid() {
     if (this.auctionStatus !== 'ACTIVE') return;
+
     if (this.customBidAmount <= this.currentBid) {
-      alert(`Min bid: ₹${this.currentBid + 1}`);
+      this.errorMsg = `Minimum bid is ₹${this.currentBid + 1}`;
       return;
     }
+
+    if (this.customBidAmount > this.availableFunds) {
+      this.errorMsg = `Insufficient funds. Available: ₹${this.availableFunds.toLocaleString('en-IN')}`;
+      return;
+    }
+
+    this.errorMsg = '';
     this.isBidding = true;
     this.wsService.sendBid(this.auctionId, this.customBidAmount);
     setTimeout(() => {
@@ -242,18 +266,32 @@ export class AuctionDetail implements OnInit, OnDestroy {
   }
 
   updateCountdown() {
+    const now = new Date().getTime();
+
+    // ✅ UPCOMING: show start countdown
+    if (this.auctionStatus === 'UPCOMING' || this.startTime.getTime() > now) {
+      const distance = this.startTime.getTime() - now;
+      if (distance <= 0) {
+        // Just started — reload to get ACTIVE status
+        this.auctionStatus = 'ACTIVE';
+        this.settlementFetchDone = false;
+        this.retryCount = 0;
+        this.loadInitialState();
+        return;
+      }
+      this.remainingTime = this.formatDistance(distance);
+      return;
+    }
+
     if (this.auctionStatus !== 'ACTIVE') return;
     if (!this.endTime) return;
 
-    const now = new Date().getTime();
-    const distance = new Date(this.endTime).getTime() - now;
+    const distance = this.endTime.getTime() - now;
 
     if (distance <= 0) {
       this.remainingTime = "00h 00m 00s";
       this.isUrgent = false;
-
       if (this.timerId) { clearInterval(this.timerId); this.timerId = null; }
-
       if (!this.settlementFetchDone) {
         this.settlementFetchDone = true;
         this.retryCount = 0;
@@ -264,10 +302,20 @@ export class AuctionDetail implements OnInit, OnDestroy {
     }
 
     this.isUrgent = distance < 60000;
-    const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((distance / (1000 * 60)) % 60);
-    const seconds = Math.floor((distance / 1000) % 60);
-    this.remainingTime = `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+    this.remainingTime = this.formatDistance(distance);
+  }
+
+  // ✅ Shared formatter for both start and end countdowns
+  private formatDistance(distance: number): string {
+    const days    = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours   = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    if (days > 0) {
+      return `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m`;
+    }
+    return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
   }
 
   toggleDropdown() { this.isDropdownOpen = !this.isDropdownOpen; }

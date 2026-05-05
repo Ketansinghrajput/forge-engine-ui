@@ -27,11 +27,14 @@
           </div>
 
           <!-- TIMER: Active state — embedded pill -->
-          <div class="ftimer-pill" *ngIf="auctionStatus === 'ACTIVE'"
-               [ngClass]="{'ftimer-pill--urgent': isUrgent}">
-            <span class="ftimer-pill__label">ENDS IN</span>
-            <span class="ftimer-pill__value">{{ remainingTime }}</span>
-          </div>
+       <!-- TIMER: Active/Upcoming state -->
+<div class="ftimer-pill" *ngIf="auctionStatus === 'ACTIVE' || auctionStatus === 'UPCOMING'"
+     [ngClass]="{'ftimer-pill--urgent': isUrgent}">
+  <span class="ftimer-pill__label">
+    {{ auctionStatus === 'UPCOMING' ? 'STARTS IN' : (remainingTime.includes('d') ? 'CLOSES' : 'ENDS IN') }}
+  </span>
+  <span class="ftimer-pill__value">{{ remainingTime }}</span>
+</div>
 
           <!-- WINNER BANNER: Completed state -->
           <div class="fwinner-banner" *ngIf="auctionStatus === 'COMPLETED'">
@@ -76,6 +79,9 @@
                      [(ngModel)]="customBidAmount"
                      [placeholder]="'Min: ' + (currentBid + 1)">
             </div>
+            <div class="fbid-error" *ngIf="errorMsg">
+    <span>✕ {{ errorMsg }}</span>
+  </div>
             <button class="fbtn"
               (click)="placeBid()"
               [disabled]="!(wsService.connectionStatus$ | async) || isBidding"

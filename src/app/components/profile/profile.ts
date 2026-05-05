@@ -36,7 +36,7 @@ export class ProfileComponent implements OnInit {
        next: (res) => {
   this.profile = res;
   this.fullName = res.fullName;
-  localStorage.setItem('fullName', res.fullName); // add this
+  localStorage.setItem('fullName', res.fullName); 
 },
         error: () => this.router.navigate(['/login'])
       });

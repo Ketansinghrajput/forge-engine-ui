@@ -67,16 +67,16 @@ export class MyBids implements OnInit {
       });
   }
 
-  isWinner(group: any): boolean {
-    return group.auctionStatus === 'COMPLETED' &&
-           group.bids.some((b: BidEntry) => b.successful);
-  }
+getStatusLabel(status: string): string {
+  if (status === 'COMPLETED' || status === 'CLOSED') return 'Settled';
+  if (status === 'EXPIRED') return 'Unsold';
+  return 'Live';
+}
 
-  getStatusLabel(status: string): string {
-    if (status === 'COMPLETED') return 'Settled';
-    if (status === 'EXPIRED') return 'Unsold';
-    return 'Live';
-  }
+isWinner(group: any): boolean {
+  return (group.auctionStatus === 'COMPLETED' || group.auctionStatus === 'CLOSED') &&
+         group.bids.some((b: BidEntry) => b.successful);
+}
 
   enterAuction(auctionId: number) {
     this.router.navigate(['/auction-detail', auctionId]);

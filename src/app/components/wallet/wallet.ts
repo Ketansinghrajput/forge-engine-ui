@@ -37,9 +37,9 @@ export class WalletComponent {
  loadBalance() {
   const token = localStorage.getItem('token');
   const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  this.http.get<any>('http://localhost:8080/api/v1/wallets/balance', { headers }) // ✅ plural
+  this.http.get<any>('http://localhost:8080/api/v1/wallets/balance', { headers }) 
     .subscribe({
-      next: (res) => { this.currentBalance = res.balance; }, // ✅ was res.totalBalance
+      next: (res) => { this.currentBalance = res.balance; }, //  was res.totalBalance
       error: (err) => console.error('Balance load failed', err)
     });
 }
@@ -71,12 +71,12 @@ export class WalletComponent {
       const token = localStorage.getItem('token');
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-   this.http.post<any>('http://localhost:8080/api/v1/wallets/topup', // ✅ plural
+   this.http.post<any>('http://localhost:8080/api/v1/wallets/topup', // plural
   { amount: this.finalAmount }, { headers })
   .subscribe({
     next: (res) => {
       this.isProcessing = false;
-      this.currentBalance = res.balance; // ✅ use server value, not local addition
+      this.currentBalance = res.balance; //  use server value, not local addition
       this.successMsg = `₹${this.finalAmount.toLocaleString('en-IN')} added successfully!`;
       this.selectedAmount = null;
       this.customAmount = null;

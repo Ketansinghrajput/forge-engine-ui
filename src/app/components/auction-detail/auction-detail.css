@@ -569,3 +569,14 @@
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: var(--border); }
 ::-webkit-scrollbar-track { background: var(--bg-input); }
+
+.fbid-error {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a52a2a;
+  border: 1px solid #a52a2a44;
+  background: #a52a2a08;
+  padding: 8px 12px;
+}
