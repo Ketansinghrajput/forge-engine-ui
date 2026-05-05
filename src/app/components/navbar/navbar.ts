@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Subscription } from 'rxjs';
+import { WalletService } from '../../services/wallet.service'; // Ensure this path is correct
 
 @Component({
   selector: 'app-navbar',
@@ -10,31 +11,34 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
   templateUrl: './navbar.html',
   styleUrl: './navbar.css'
 })
-export class Navbar implements OnInit {
+export class Navbar implements OnInit, OnDestroy {
   isDropdownOpen = false;
   availableFunds: number = 0;
+  private balanceSub!: Subscription;
 
-  constructor(private router: Router, private http: HttpClient) {}
+  // 1. Inject WalletService
+  constructor(private router: Router, private walletService: WalletService) {}
 
   ngOnInit() {
-    this.loadFunds();
-    this.loadProfile();
+    // 2. Subscribe to the live balance stream
+    this.balanceSub = this.walletService.balance$.subscribe(balance => {
+      this.availableFunds = balance;
+    });
+
+    // 3. Trigger the initial fetch through the service
+    this.walletService.refreshProfileAndBalance();
   }
 
-  loadProfile() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.get<any>('http://localhost:8080/api/v1/users/me', { headers })
-      .subscribe({
-        next: (res) => localStorage.setItem('fullName', res.fullName),
-        error: () => {}
-      });
+  ngOnDestroy() {
+    // Always unsubscribe to prevent memory leaks
+    if (this.balanceSub) {
+      this.balanceSub.unsubscribe();
+    }
   }
 
   get userInitials(): string {
     const fullName = localStorage.getItem('fullName') || '';
-    if (fullName.trim()) {
+    if (fullName.trim() && fullName !== 'undefined') {
       const parts = fullName.trim().split(' ');
       if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
       return fullName.slice(0, 2).toUpperCase();
@@ -44,47 +48,39 @@ export class Navbar implements OnInit {
   }
 
   get userName(): string {
-    return localStorage.getItem('fullName') || localStorage.getItem('userEmail')?.split('@')[0] || '';
+    const fullName = localStorage.getItem('fullName');
+    return (fullName && fullName !== 'undefined') ? fullName : (localStorage.getItem('userEmail')?.split('@')[0] || '');
   }
 
   get userEmail(): string {
     return localStorage.getItem('userEmail') || 'bidder@forge.com';
   }
 
-  loadFunds() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.get<any>('http://localhost:8080/api/v1/wallet/balance', { headers })
-      .subscribe({
-        next: (res) => { this.availableFunds = res.totalBalance; },
-        error: (err) => console.error('Funds load failed', err)
-      });
-  }
-
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
+
   toggleTheme() {
-  const html = document.documentElement;
-  const isDark = html.getAttribute('data-theme') === 'dark';
-  if (isDark) {
-    html.removeAttribute('data-theme');
-    localStorage.setItem('theme', 'light');
-  } else {
-    html.setAttribute('data-theme', 'dark');
-    localStorage.setItem('theme', 'dark');
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      html.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+    } else {
+      html.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    }
   }
-}
 
-get isDarkMode(): boolean {
-  return document.documentElement.getAttribute('data-theme') === 'dark';
-}
+  get isDarkMode(): boolean {
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+  }
 
+  // Sirf ek logout method jo sab sahi se clear karega
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('userEmail');
-    localStorage.removeItem('fullName');
+    localStorage.removeItem('fullName'); 
     this.router.navigate(['/login']);
   }
 }

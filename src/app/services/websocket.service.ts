@@ -2,11 +2,14 @@ import { Injectable } from '@angular/core';
 import { Subject, BehaviorSubject } from 'rxjs';
 import SockJS from 'sockjs-client';
 import { over, Client, Subscription } from 'stompjs';
+import { WalletService } from './wallet.service'; 
 
 export interface AuctionUpdate {
   auctionId: number;
   newPrice: number;
   bidder: string;
+  availableFunds?: number; 
+  bidderName?: string;     
   endTime?: string;
   timestamp: string;
 }
@@ -21,7 +24,7 @@ export class WebsocketService {
   public connectionStatus$ = new BehaviorSubject<boolean>(false);
   public updates$ = new Subject<AuctionUpdate>();
 
-  constructor() {}
+  constructor(private walletService: WalletService) {}
 
   connect(auctionId: number = 1) {
     const token = localStorage.getItem('token');
@@ -79,12 +82,22 @@ export class WebsocketService {
     }
 
     const topic = `/topic/auctions/${auctionId}`;
-    this.auctionSubscription = this.stompClient.subscribe(topic, (msg) => {
-      if (msg.body) {
-        const data: AuctionUpdate = JSON.parse(msg.body);
-        this.updates$.next(data);
-      }
-    });
+this.auctionSubscription = this.stompClient.subscribe(topic, (msg) => {
+  if (msg.body) {
+    const data: any = JSON.parse(msg.body);
+    this.updates$.next(data);
+
+    const currentUserEmail = localStorage.getItem('userEmail');
+
+    if (data.highestBidderEmail === currentUserEmail && data.availableFunds !== undefined) {
+      this.walletService.updateBalance(data.availableFunds);
+    }
+
+    if (data.highestBidderEmail !== currentUserEmail && data.type === 'BID_PLACED') {
+      this.walletService.refreshProfileAndBalance();
+    }
+  }
+});
     console.log(`Subscribed to topic: ${topic}`);
   }
 

@@ -5,8 +5,6 @@
 
     <!-- MAIN CARD -->
     <div class="fm">
-
-      <!-- TOP: Image + Details side by side -->
       <div class="fm-top">
 
         <!-- LEFT: Image -->
@@ -19,42 +17,86 @@
 
         <!-- RIGHT: Details -->
         <div class="fm-info">
+
+          <!-- META ROW: badge + ref -->
           <div class="fmeta">
-            <span class="fbadge">&#x2737; Live Lot</span>
+            <span class="fbadge" [ngClass]="{'fbadge-closed': auctionStatus !== 'ACTIVE'}">
+              &#x2737; {{ auctionStatus === 'ACTIVE' ? 'Live Lot' : 'Lot Closed' }}
+            </span>
             <span class="fref">Ref: {{ auctionRef }}</span>
           </div>
 
-          <div class="ftimer" [ngClass]="{'ftimer-urgent': isUrgent}">
-            <span class="ftimer-lbl">ENDS IN:</span>
-            <span class="ftimer-val">{{ remainingTime }}</span>
+          <!-- TIMER: Active state — embedded pill -->
+       <!-- TIMER: Active/Upcoming state -->
+<div class="ftimer-pill" *ngIf="auctionStatus === 'ACTIVE' || auctionStatus === 'UPCOMING'"
+     [ngClass]="{'ftimer-pill--urgent': isUrgent}">
+  <span class="ftimer-pill__label">
+    {{ auctionStatus === 'UPCOMING' ? 'STARTS IN' : (remainingTime.includes('d') ? 'CLOSES' : 'ENDS IN') }}
+  </span>
+  <span class="ftimer-pill__value">{{ remainingTime }}</span>
+</div>
+
+          <!-- WINNER BANNER: Completed state -->
+          <div class="fwinner-banner" *ngIf="auctionStatus === 'COMPLETED'">
+            <div class="fwinner-banner__icon">✦</div>
+            <div class="fwinner-banner__content">
+              <span class="fwinner-banner__label">SOLD TO</span>
+              <span class="fwinner-banner__name">{{ highestBidder }}</span>
+            </div>
+            <div class="fwinner-banner__gavel">⬛</div>
+          </div>
+
+          <!-- UNSOLD BANNER: Expired state -->
+          <div class="funsold-banner" *ngIf="auctionStatus === 'EXPIRED'">
+            <div class="funsold-banner__icon">✕</div>
+            <span class="funsold-banner__text">LOT UNSOLD — NO BIDS MET RESERVE</span>
           </div>
 
           <div class="forn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</div>
           <h2 class="ftitle">{{ auctionTitle }}</h2>
           <p class="fdesc">{{ auctionDescription }}</p>
 
+          <!-- STATS GRID -->
           <div class="fstats">
             <div class="fstat fstat--l">
-              <p class="fstat-lbl">Current Highest Bid</p>
+              <p class="fstat-lbl">{{ auctionStatus === 'ACTIVE' ? 'Current Highest Bid' : 'Final Sale Price' }}</p>
               <p class="fstat-v">₹{{ currentBid | number }}</p>
             </div>
             <div class="fstat">
-              <p class="fstat-lbl">Current Leader</p>
+              <p class="fstat-lbl">{{ auctionStatus === 'ACTIVE' ? 'Current Leader' : 'Winning Bidder' }}</p>
               <p class="fstat-v2">
-                {{ (highestBidder && highestBidder !== 'Waiting...') ? highestBidder : 'Waiting for Bids...' }}
+                {{ (highestBidder && highestBidder !== 'Waiting...') ? highestBidder : 'No Bids Yet' }}
               </p>
             </div>
           </div>
 
-          <button class="fbtn"
-            (click)="placeBid()"
-            [disabled]="!(wsService.connectionStatus$ | async)"
-            [style.opacity]="(wsService.connectionStatus$ | async) ? '1' : '0.5'">
-            &#x2192;&nbsp;
-            {{ (wsService.connectionStatus$ | async)
-                ? 'Raise Bid to ₹' + (currentBid + 500 | number)
-                : 'Connecting to Engine...' }}
-          </button>
+          <!-- BID ACTION: only when active -->
+          <div class="fbid-action" *ngIf="auctionStatus === 'ACTIVE'">
+            <div class="finput-group">
+              <span class="fcurrency">₹</span>
+              <input type="number"
+                     class="fbid-input"
+                     [(ngModel)]="customBidAmount"
+                     [placeholder]="'Min: ' + (currentBid + 1)">
+            </div>
+            <div class="fbid-error" *ngIf="errorMsg">
+    <span>✕ {{ errorMsg }}</span>
+  </div>
+            <button class="fbtn"
+              (click)="placeBid()"
+              [disabled]="!(wsService.connectionStatus$ | async) || isBidding"
+              [style.opacity]="(wsService.connectionStatus$ | async) ? '1' : '0.5'">
+              &#x2192;&nbsp;
+              {{ (wsService.connectionStatus$ | async) ? 'Place Custom Bid' : 'Connecting...' }}
+            </button>
+          </div>
+
+          <!-- SETTLED MESSAGE -->
+          <div class="fsold-msg" *ngIf="auctionStatus === 'COMPLETED'">
+            <span class="fsold-msg__dot"></span>
+            This lot has been settled successfully.
+          </div>
+
         </div>
       </div>
     </div>

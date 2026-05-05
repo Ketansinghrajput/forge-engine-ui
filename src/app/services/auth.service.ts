@@ -6,7 +6,7 @@ import { Observable, tap } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-private apiUrl = 'http://localhost:8080/api/v1/auth/login'; // authenticate ki jagah login
+private apiUrl = 'http://localhost:8080/api/v1/auth/login'; 
   constructor(private http: HttpClient) { }
 
  login(credentials: any): Observable<any> {
