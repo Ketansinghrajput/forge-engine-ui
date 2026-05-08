@@ -39,20 +39,27 @@ export class AuctionLobbyComponent implements OnInit {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-    this.http.get<any[]>('http://localhost:8080/api/v1/auctions/active', { headers })
+    // Backend fetching both ACTIVE and PLANNED
+    this.http.get<any>('http://localhost:8080/api/v1/auctions/active', { headers })
       .subscribe({
-        next: (items) => {
-          this.auctionItems = items.map(item => ({
+        next: (response) => {
+          const items = response.content || []; 
+          
+          this.auctionItems = items.map((item: any) => ({
             id: item.id,
             title: item.title,
             startingPrice: item.currentHighestBid,
             currentHighestBid: item.currentHighestBid,
+            startTime: item.startTime ? new Date(item.startTime) : null, // Store as Date for logic
             endTime: item.endTime ? new Date(item.endTime) : new Date(),
             imageUrl: item.imageUrl || '',
             quickFact: item.description || '',
-            sellerEmail: item.sellerEmail
+            sellerEmail: item.sellerEmail,
+            status: item.status // 🔥 Capture status for UI logic
           }));
-          this.auctionItems.sort((a, b) => b.currentHighestBid - a.currentHighestBid);
+
+          // 🔥 SENSEI FIX: Earliest ending first (Ascending order by endTime)
+          this.auctionItems.sort((a, b) => a.endTime.getTime() - b.endTime.getTime());
         },
         error: (err) => console.error('Lobby load failed', err)
       });

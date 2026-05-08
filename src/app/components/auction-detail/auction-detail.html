@@ -20,36 +20,38 @@
 
           <!-- META ROW: badge + ref -->
           <div class="fmeta">
-            <span class="fbadge" [ngClass]="{'fbadge-closed': auctionStatus !== 'ACTIVE'}">
-              &#x2737; {{ auctionStatus === 'ACTIVE' ? 'Live Lot' : 'Lot Closed' }}
+            <span class="fbadge" [ngClass]="{'fbadge-closed': auctionStatus !== 'ACTIVE' && auctionStatus !== 'UPCOMING'}">
+              &#x2737; {{ auctionStatus === 'ACTIVE' ? 'Live Lot' : auctionStatus === 'UPCOMING' ? 'Upcoming Lot' : 'Lot Closed' }}
             </span>
             <span class="fref">Ref: {{ auctionRef }}</span>
           </div>
 
-          <!-- TIMER: Active state — embedded pill -->
-       <!-- TIMER: Active/Upcoming state -->
-<div class="ftimer-pill" *ngIf="auctionStatus === 'ACTIVE' || auctionStatus === 'UPCOMING'"
-     [ngClass]="{'ftimer-pill--urgent': isUrgent}">
-  <span class="ftimer-pill__label">
-    {{ auctionStatus === 'UPCOMING' ? 'STARTS IN' : (remainingTime.includes('d') ? 'CLOSES' : 'ENDS IN') }}
-  </span>
-  <span class="ftimer-pill__value">{{ remainingTime }}</span>
-</div>
+          <!-- TIMER: Active / Upcoming -->
+          <div class="ftimer-pill"
+               *ngIf="auctionStatus === 'ACTIVE' || auctionStatus === 'UPCOMING'"
+               [ngClass]="{'ftimer-pill--urgent': isUrgent}">
+            <span class="ftimer-pill__label">
+              {{ auctionStatus === 'UPCOMING' ? 'STARTS IN' : (remainingTime.includes('d') ? 'CLOSES' : 'ENDS IN') }}
+            </span>
+            <span class="ftimer-pill__value">{{ remainingTime }}</span>
+          </div>
 
-          <!-- WINNER BANNER: Completed state -->
-          <div class="fwinner-banner" *ngIf="auctionStatus === 'COMPLETED'">
-            <div class="fwinner-banner__icon">✦</div>
+          <!-- WINNER BANNER: sirf tab jab winner actually ho -->
+          <div class="fwinner-banner"
+               *ngIf="(auctionStatus === 'COMPLETED' || auctionStatus === 'CLOSED') && hasWinner">
+            <div class="fwinner-banner__icon">&#x2756;</div>
             <div class="fwinner-banner__content">
               <span class="fwinner-banner__label">SOLD TO</span>
               <span class="fwinner-banner__name">{{ highestBidder }}</span>
             </div>
-            <div class="fwinner-banner__gavel">⬛</div>
+            <div class="fwinner-banner__gavel">&#x2759;</div>
           </div>
 
-          <!-- UNSOLD BANNER: Expired state -->
-          <div class="funsold-banner" *ngIf="auctionStatus === 'EXPIRED'">
-            <div class="funsold-banner__icon">✕</div>
-            <span class="funsold-banner__text">LOT UNSOLD — NO BIDS MET RESERVE</span>
+          <!-- UNSOLD BANNER: EXPIRED, ya koi bhi terminal status jisme winner nahi -->
+          <div class="funsold-banner"
+               *ngIf="auctionStatus === 'EXPIRED' || ((auctionStatus === 'COMPLETED' || auctionStatus === 'CLOSED') && !hasWinner)">
+            <div class="funsold-banner__icon">&#x2715;</div>
+            <span class="funsold-banner__text">LOT UNSOLD — NO QUALIFYING BIDS</span>
           </div>
 
           <div class="forn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</div>
@@ -59,29 +61,32 @@
           <!-- STATS GRID -->
           <div class="fstats">
             <div class="fstat fstat--l">
-              <p class="fstat-lbl">{{ auctionStatus === 'ACTIVE' ? 'Current Highest Bid' : 'Final Sale Price' }}</p>
-              <p class="fstat-v">₹{{ currentBid | number }}</p>
+              <p class="fstat-lbl">
+                {{ isTerminal ? 'Final Sale Price' : 'Current Highest Bid' }}
+              </p>
+              <p class="fstat-v">&#x20B9;{{ currentBid | number }}</p>
             </div>
             <div class="fstat">
-              <p class="fstat-lbl">{{ auctionStatus === 'ACTIVE' ? 'Current Leader' : 'Winning Bidder' }}</p>
-              <p class="fstat-v2">
-                {{ (highestBidder && highestBidder !== 'Waiting...') ? highestBidder : 'No Bids Yet' }}
+              <p class="fstat-lbl">
+                {{ isTerminal ? 'Winning Bidder' : 'Current Leader' }}
               </p>
+              <p class="fstat-v2">{{ highestBidder }}</p>
             </div>
           </div>
 
           <!-- BID ACTION: only when active -->
           <div class="fbid-action" *ngIf="auctionStatus === 'ACTIVE'">
             <div class="finput-group">
-              <span class="fcurrency">₹</span>
+              <span class="fcurrency">&#x20B9;</span>
               <input type="number"
                      class="fbid-input"
                      [(ngModel)]="customBidAmount"
-                     [placeholder]="'Min: ' + (currentBid + 1)">
+                     [placeholder]="'Min: ₹' + (currentBid + 1)">
             </div>
             <div class="fbid-error" *ngIf="errorMsg">
-    <span>✕ {{ errorMsg }}</span>
-  </div>
+              <div class="fbid-error__icon">&#x2715;</div>
+              <span>{{ errorMsg }}</span>
+            </div>
             <button class="fbtn"
               (click)="placeBid()"
               [disabled]="!(wsService.connectionStatus$ | async) || isBidding"
@@ -91,10 +96,18 @@
             </button>
           </div>
 
-          <!-- SETTLED MESSAGE -->
-          <div class="fsold-msg" *ngIf="auctionStatus === 'COMPLETED'">
+          <!-- SETTLED MESSAGE: sirf tab jab winner ho -->
+          <div class="fsold-msg"
+               *ngIf="(auctionStatus === 'COMPLETED' || auctionStatus === 'CLOSED') && hasWinner">
             <span class="fsold-msg__dot"></span>
             This lot has been settled successfully.
+          </div>
+
+          <!-- UNSOLD MESSAGE: no winner -->
+          <div class="fsold-msg" style="color: var(--text-secondary); border-color: var(--border); background: var(--bg-input);"
+               *ngIf="auctionStatus === 'EXPIRED' || ((auctionStatus === 'COMPLETED' || auctionStatus === 'CLOSED') && !hasWinner)">
+            <span class="fsold-msg__dot" style="background: var(--text-secondary); animation: none;"></span>
+            This lot did not meet the reserve. No bids were accepted.
           </div>
 
         </div>
@@ -105,15 +118,19 @@
     <div class="fl">
       <h3 class="fl-title"><span class="fl-dot"></span>Activity Log</h3>
       <div class="ffeed">
-        <div *ngFor="let msg of feed" class="fentry">
+        <div *ngFor="let msg of activityLogs" class="fentry">
           <div class="fetop">
             <div class="femsg">
-              <span *ngIf="!msg.message" class="feamt">₹{{ (msg.bidAmount || msg.newPrice) | number }}</span>
-              <span *ngIf="!msg.message"> placed by {{ msg.bidderName || msg.bidder }}</span>
+              <span *ngIf="!msg.message" class="feamt">&#x20B9;{{ msg.amount | number }}</span>
+              <span *ngIf="!msg.message"> placed by {{ msg.bidderName }}</span>
               <span *ngIf="msg.message" class="fesys">{{ msg.message }}</span>
             </div>
-            <p class="fetime">{{ msg.timestamp }}</p>
+            <p class="fetime">{{ msg.time | date:'shortTime' }}</p>
           </div>
+        </div>
+
+        <div *ngIf="activityLogs.length === 0" class="fentry">
+          <span class="fesys">Waiting for bids...</span>
         </div>
       </div>
     </div>

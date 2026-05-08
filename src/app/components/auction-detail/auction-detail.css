@@ -570,13 +570,48 @@
 ::-webkit-scrollbar-thumb { background: var(--border); }
 ::-webkit-scrollbar-track { background: var(--bg-input); }
 
+/* ============================================================
+   BID ERROR BANNER — purani .fbid-error block ko replace karo
+   ============================================================ */
+
 .fbid-error {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid #8b2222;
+  border-top: none;    /* input ke saath flush */
+  border-bottom: none; /* button ke saath flush */
+  background: #180606;
+  overflow: hidden;
+  animation: errSlideIn 0.22s ease forwards;
+}
+
+@keyframes errSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Red left icon block */
+.fbid-error__icon {
+  background: #8b2222;
+  color: #fff;
+  font-size: 0.7rem;
   font-family: 'Courier Prime', monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.14em;
+  font-weight: 700;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Message text */
+.fbid-error span {
+  padding: 12px 14px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: #a52a2a;
-  border: 1px solid #a52a2a44;
-  background: #a52a2a08;
-  padding: 8px 12px;
+  font-weight: 700;
+  color: #d97070;
+  line-height: 1.4;
 }

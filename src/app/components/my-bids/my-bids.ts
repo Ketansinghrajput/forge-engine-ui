@@ -5,7 +5,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Navbar } from '../navbar/navbar';
 
 interface BidEntry {
-  bidId: number;
+bidId: number;
   amount: number;
   auctionId: number;
   auctionTitle: string;
@@ -13,6 +13,8 @@ interface BidEntry {
   imageUrl: string;
   successful: boolean;
   placedAt: string;
+  highestBidderId: number; 
+  bidderId: number;
 }
 
 @Component({
@@ -74,8 +76,9 @@ getStatusLabel(status: string): string {
 }
 
 isWinner(group: any): boolean {
-  return (group.auctionStatus === 'COMPLETED' || group.auctionStatus === 'CLOSED') &&
-         group.bids.some((b: BidEntry) => b.successful);
+  const isOver = ['COMPLETED', 'CLOSED', 'SETTLED'].includes(group.auctionStatus);
+  if (!isOver) return false;
+  return group.bids.some((b: BidEntry) => b.bidderId === b.highestBidderId);
 }
 
   enterAuction(auctionId: number) {

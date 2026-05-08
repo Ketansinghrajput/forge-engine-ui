@@ -142,3 +142,365 @@
 
 .ca-btn:hover:not(:disabled) { background: var(--text-secondary); }
 .ca-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Custom File Input Styling */
+.ca-file-input {
+  padding: 0.35rem 0.5rem 0.35rem 1rem;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--text-secondary);
+  line-height: 2.2;
+}
+
+.ca-file-input::file-selector-button {
+  float: right;
+  margin-left: 1rem;
+  margin-right: 0;
+  background: var(--text-primary);
+  color: var(--text-light);
+  border: none;
+  padding: 0.6rem 1rem;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.ca-file-input::file-selector-button:hover {
+  opacity: 0.8;
+}
+
+/* Remove up/down arrows from number input */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* =========================================================
+   FORGE FINE AUCTIONS — FLATPICKR COMPLETE OVERRIDE
+   Fixes: overlap, cramped time, ugly gradients, tight days
+   ========================================================= */
+
+/* --- Base calendar container --- */
+::ng-deep .flatpickr-calendar {
+  background: #15100c !important;
+  border: 1px solid #8c6d31 !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.95) !important;
+  font-family: 'EB Garamond', Georgia, serif !important;
+  border-radius: 0 !important;
+
+  /* FIX: prevent calendar from overlapping adjacent fields */
+  position: absolute !important;
+  z-index: 9999 !important;
+
+  /* Wider calendar — more breathing room for day cells */
+  width: 320px !important;
+}
+
+/* --- Kill ALL gradients & grey backgrounds everywhere --- */
+::ng-deep .flatpickr-calendar,
+::ng-deep .flatpickr-months,
+::ng-deep .flatpickr-month,
+::ng-deep .flatpickr-weekdays,
+::ng-deep .flatpickr-weekdaycontainer,
+::ng-deep .flatpickr-innerContainer,
+::ng-deep .flatpickr-rContainer,
+::ng-deep .flatpickr-days,
+::ng-deep .dayContainer {
+  background: #15100c !important;
+  background-color: #15100c !important;
+  background-image: none !important;
+  border: none !important;
+}
+
+/* --- Month header --- */
+::ng-deep .flatpickr-months {
+  padding: 12px 8px 8px !important;
+  align-items: center !important;
+}
+
+::ng-deep .flatpickr-month {
+  color: #d4af37 !important;
+  height: auto !important;
+  line-height: 1 !important;
+}
+
+/* --- Month + Year label --- */
+::ng-deep .flatpickr-current-month {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-size: 1rem !important;
+  padding: 0 !important;
+  width: 100% !important;
+  position: static !important;   /* FIX: was causing overlap via absolute positioning */
+  left: auto !important;
+}
+
+::ng-deep .flatpickr-current-month .flatpickr-monthDropdown-months {
+  background: #15100c !important;
+  color: #d4af37 !important;
+  font-family: 'Courier Prime', monospace !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  border: none !important;
+  outline: none !important;
+  cursor: pointer !important;
+  padding: 2px 4px !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+::ng-deep .flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+  background: #2a2018 !important;
+}
+
+/* --- Year input --- */
+::ng-deep .flatpickr-current-month input.cur-year {
+  color: #d4af37 !important;
+  background: transparent !important;
+  font-family: 'Courier Prime', monospace !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.12em !important;
+  font-weight: 700 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 2px 0 !important;
+  width: 5ch !important;
+}
+
+::ng-deep .flatpickr-current-month input.cur-year::selection {
+  background: #33261c !important;
+  color: #d4af37 !important;
+}
+
+::ng-deep .flatpickr-current-month .numInputWrapper {
+  width: 5ch !important;
+}
+
+/* Hide year arrows (they're ugly and unnecessary) */
+::ng-deep .flatpickr-current-month .numInputWrapper span.arrowUp,
+::ng-deep .flatpickr-current-month .numInputWrapper span.arrowDown {
+  display: none !important;
+}
+
+/* --- Prev/Next month arrow buttons --- */
+::ng-deep .flatpickr-prev-month,
+::ng-deep .flatpickr-next-month {
+  color: #d4af37 !important;
+  fill: #d4af37 !important;
+  padding: 8px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+::ng-deep .flatpickr-prev-month:hover,
+::ng-deep .flatpickr-next-month:hover {
+  background: #2a2018 !important;
+  color: #f0d060 !important;
+}
+
+::ng-deep .flatpickr-prev-month svg,
+::ng-deep .flatpickr-next-month svg {
+  fill: #d4af37 !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* --- Weekday labels (Sun Mon Tue ...) --- */
+::ng-deep .flatpickr-weekdays {
+  padding: 8px 4px 4px !important;
+  border-bottom: 1px solid #2e2010 !important;
+}
+
+::ng-deep span.flatpickr-weekday {
+  background: #15100c !important;
+  background-color: #15100c !important;
+  background-image: none !important;
+  color: #8c6d31 !important;
+  font-family: 'Courier Prime', monospace !important;
+  font-size: 0.62rem !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+}
+
+/* --- Day cells --- */
+::ng-deep .flatpickr-days {
+  padding: 6px 4px !important;
+}
+
+::ng-deep .dayContainer {
+  padding: 4px !important;
+  min-width: unset !important;
+  max-width: unset !important;
+  width: 100% !important;
+}
+
+::ng-deep .flatpickr-day {
+  color: #e0d5c1 !important;
+  border-radius: 0 !important;
+  font-family: 'EB Garamond', serif !important;
+  font-size: 0.95rem !important;
+
+  /* FIX: Bigger tap targets — more comfortable clicking */
+  height: 36px !important;
+  line-height: 36px !important;
+  max-width: 36px !important;
+
+  border: 1px solid transparent !important;
+  transition: background 0.15s, border-color 0.15s !important;
+}
+
+::ng-deep .flatpickr-day:hover,
+::ng-deep .flatpickr-day:focus {
+  background: #2a2018 !important;
+  border-color: #8c6d31 !important;
+  outline: none !important;
+}
+
+/* Greyed-out prev/next month days */
+::ng-deep .flatpickr-day.prevMonthDay,
+::ng-deep .flatpickr-day.nextMonthDay {
+  color: #453520 !important;
+}
+
+/* Disabled days (past dates) */
+::ng-deep .flatpickr-day.flatpickr-disabled,
+::ng-deep .flatpickr-day.flatpickr-disabled:hover {
+  color: #3a2c1a !important;
+  cursor: not-allowed !important;
+  background: transparent !important;
+}
+
+/* Today highlight — subtle gold underline, not full fill */
+::ng-deep .flatpickr-day.today {
+  border-bottom: 2px solid #8c6d31 !important;
+  background: transparent !important;
+  color: #d4af37 !important;
+  font-weight: 700 !important;
+}
+
+::ng-deep .flatpickr-day.today:hover {
+  background: #2a2018 !important;
+}
+
+/* Selected day — gold fill */
+::ng-deep .flatpickr-day.selected,
+::ng-deep .flatpickr-day.startRange,
+::ng-deep .flatpickr-day.endRange,
+::ng-deep .flatpickr-day.selected:focus,
+::ng-deep .flatpickr-day.selected:hover,
+::ng-deep .flatpickr-day.selected.prevMonthDay,
+::ng-deep .flatpickr-day.selected.nextMonthDay {
+  background: #d4af37 !important;
+  color: #0e0a04 !important;
+  border-color: #d4af37 !important;
+  font-weight: 700 !important;
+}
+
+/* --- Time section --- */
+::ng-deep .flatpickr-time {
+  background: #1c1409 !important;
+  border-top: 1px solid #2e2010 !important;
+  height: auto !important;
+  padding: 12px 8px !important;
+
+  /* FIX: was cramped — add breathing room */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+}
+
+::ng-deep .flatpickr-time .numInputWrapper {
+  flex: none !important;
+  width: 52px !important;
+}
+
+::ng-deep .flatpickr-time input {
+  background: transparent !important;
+  color: #d4af37 !important;
+  font-family: 'Courier Prime', monospace !important;
+  font-size: 1.25rem !important;    /* FIX: bigger, easier to read */
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  border: none !important;
+  text-align: center !important;
+  height: 44px !important;          /* FIX: taller hit target */
+  padding: 0 !important;
+}
+
+::ng-deep .flatpickr-time input:hover,
+::ng-deep .flatpickr-time input:focus {
+  background: #2a2018 !important;
+  outline: none !important;
+}
+
+/* Colon separator */
+::ng-deep .flatpickr-time .flatpickr-time-separator {
+  color: #8c6d31 !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  line-height: 44px !important;
+  padding: 0 2px !important;
+}
+
+/* AM/PM toggle */
+::ng-deep .flatpickr-time .flatpickr-am-pm {
+  background: #2a2018 !important;
+  color: #d4af37 !important;
+  font-family: 'Courier Prime', monospace !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  border: 1px solid #8c6d31 !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  margin-left: 8px !important;
+  padding: 0 10px !important;
+  cursor: pointer !important;
+  transition: background 0.15s !important;
+}
+
+::ng-deep .flatpickr-time .flatpickr-am-pm:hover {
+  background: #3a2c14 !important;
+  color: #f0d060 !important;
+}
+
+/* Up/down arrows on time inputs */
+::ng-deep .flatpickr-time .numInputWrapper span {
+  border: none !important;
+  right: 0 !important;
+  opacity: 0 !important;
+  transition: opacity 0.15s !important;
+}
+
+::ng-deep .flatpickr-time .numInputWrapper:hover span {
+  opacity: 1 !important;
+}
+
+::ng-deep .flatpickr-time .numInputWrapper span.arrowUp:after {
+  border-bottom-color: #d4af37 !important;
+}
+
+::ng-deep .flatpickr-time .numInputWrapper span.arrowDown:after {
+  border-top-color: #d4af37 !important;
+}
+
+/* --- Divider line between calendar and time --- */
+::ng-deep .flatpickr-calendar.hasTime .flatpickr-time {
+  border-top: 1px solid #33261c !important;
+}
