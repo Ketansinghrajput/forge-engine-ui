@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { Subject, BehaviorSubject } from 'rxjs';
 import SockJS from 'sockjs-client';
 import { over, Client, Subscription } from 'stompjs';
-import { WalletService } from './wallet.service'; 
+import { WalletService } from './wallet.service';
 
 export interface AuctionUpdate {
   auctionId: number;
   newPrice: number;
   bidder: string;
-  availableFunds?: number; 
-  bidderName?: string;     
+  availableFunds?: number;
+  bidderName?: string;
   endTime?: string;
   timestamp: string;
 }
@@ -20,6 +20,7 @@ export interface AuctionUpdate {
 export class WebsocketService {
   private stompClient: Client | null = null;
   private auctionSubscription: Subscription | null = null;
+  private errorSubscription: Subscription | null = null; // 🔥 personal error queue
 
   public connectionStatus$ = new BehaviorSubject<boolean>(false);
   public updates$ = new Subject<AuctionUpdate>();
@@ -28,7 +29,7 @@ export class WebsocketService {
 
   connect(auctionId: number = 1) {
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
       console.error('Token missing! WebSocket connect nahi hoga.');
       this.connectionStatus$.next(false);
@@ -41,7 +42,7 @@ export class WebsocketService {
 
     const socket = new SockJS('http://localhost:8080/ws-forge');
     this.stompClient = over(socket);
-    
+
     this.stompClient.debug = (msg: string) => {
       if (msg.includes('SEND') || msg.includes('MESSAGE')) {
         console.log('STOMP Log:', msg);
@@ -57,6 +58,7 @@ export class WebsocketService {
         const user = this.parseJwt(token)?.sub || 'Unknown User';
         console.log(`Connected to Forge Engine as: ${user}`);
         this.subscribeToAuction(auctionId);
+        this.subscribeToPersonalErrors(); // 🔥 personal error queue bhi subscribe karo
       },
       (err) => {
         this.connectionStatus$.next(false);
@@ -82,23 +84,52 @@ export class WebsocketService {
     }
 
     const topic = `/topic/auctions/${auctionId}`;
-this.auctionSubscription = this.stompClient.subscribe(topic, (msg) => {
-  if (msg.body) {
-    const data: any = JSON.parse(msg.body);
-    this.updates$.next(data);
+    this.auctionSubscription = this.stompClient.subscribe(topic, (msg) => {
+      if (msg.body) {
+        const data: any = JSON.parse(msg.body);
+        this.updates$.next(data);
 
-    const currentUserEmail = localStorage.getItem('userEmail');
+        const currentUserEmail = localStorage.getItem('userEmail');
 
-    if (data.highestBidderEmail === currentUserEmail && data.availableFunds !== undefined) {
-      this.walletService.updateBalance(data.availableFunds);
-    }
+        if (data.highestBidderEmail === currentUserEmail && data.availableFunds !== undefined) {
+          this.walletService.updateBalance(data.availableFunds);
+        }
 
-    if (data.highestBidderEmail !== currentUserEmail && data.type === 'BID_PLACED') {
-      this.walletService.refreshProfileAndBalance();
-    }
-  }
-});
+        if (data.highestBidderEmail !== currentUserEmail && data.type === 'BID_PLACED') {
+          this.walletService.refreshProfileAndBalance();
+        }
+      }
+    });
     console.log(`Subscribed to topic: ${topic}`);
+  }
+
+  // 🔥 Backend personal error queue — sirf is user ko milti hai
+  private subscribeToPersonalErrors() {
+    if (!this.stompClient || !this.stompClient.connected) return;
+
+    if (this.errorSubscription) {
+      this.errorSubscription.unsubscribe();
+    }
+
+    // Spring Boot ka default personal queue prefix hota hai /user/queue/
+    // Backend mein convertAndSendToUser() se aata hai
+    this.errorSubscription = this.stompClient.subscribe('/user/queue/errors', (msg) => {
+      if (msg.body) {
+        const data: any = JSON.parse(msg.body);
+        console.log('Personal error received:', data);
+
+        // Error ko updates$ mein daal do — component wahan sun raha hai
+        this.updates$.next({
+          ...data,
+          type: 'BID_ERROR',
+          // Backend "Bid Failed: Seller cannot bid..." bhejta hai
+          // message field mein raw string bhi ho sakti hai
+          errorMessage: data.message || data.errorMessage || data.error || msg.body
+        });
+      }
+    });
+
+    console.log('Subscribed to personal error queue: /user/queue/errors');
   }
 
   sendBid(auctionId: number, bidAmount: number) {
@@ -112,6 +143,9 @@ this.auctionSubscription = this.stompClient.subscribe(topic, (msg) => {
   }
 
   disconnect() {
+    if (this.errorSubscription) {
+      this.errorSubscription.unsubscribe(); // 🔥 cleanup
+    }
     if (this.stompClient) {
       this.stompClient.disconnect(() => {
         this.connectionStatus$.next(false);

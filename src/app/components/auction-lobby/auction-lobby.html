@@ -5,7 +5,10 @@
   <!-- HERO LOT -->
   <div class="hero-lot" *ngIf="auctionItems.length > 0">
     <div class="hero-img-wrap">
-      <span class="hero-tag">&#x2737; Featured Lot #{{ auctionItems[0].id }}</span>
+      <!-- SENSEI FIX: Dynamic Badge for Hero -->
+      <span class="hero-tag" [ngStyle]="{'background-color': auctionItems[0].status === 'ACTIVE' ? '#8b0000' : '#b8860b'}">
+        {{ auctionItems[0].status === 'ACTIVE' ? '🔴 LIVE LOT #' + auctionItems[0].id : '⏳ UPCOMING LOT #' + auctionItems[0].id }}
+      </span>
       <img [src]="auctionItems[0].imageUrl || 'https://placehold.co/800x480/3D1F08/F0E8D5?text=Forge+Fine+Auctions'"
            alt="Watch" class="hero-img">
       <div class="hero-img-overlay"></div>
@@ -21,14 +24,20 @@
           <span class="hero-stat-v">₹{{ auctionItems[0].currentHighestBid | number }}</span>
         </div>
         <div class="hero-stat">
-          <span class="hero-stat-lbl">Closing</span>
-          <span class="hero-stat-v">{{ auctionItems[0].endTime | date:'h:mm a, d MMM' }}</span>
+          <!-- SENSEI FIX: Dynamic Timer for Hero -->
+          <span class="hero-stat-lbl">{{ auctionItems[0].status === 'PLANNED' ? 'Starts At' : 'Closing' }}</span>
+          <span class="hero-stat-v" *ngIf="auctionItems[0].status === 'ACTIVE'">{{ auctionItems[0].endTime | date:'h:mm a, d MMM' }}</span>
+          <span class="hero-stat-v" *ngIf="auctionItems[0].status === 'PLANNED'">{{ auctionItems[0].startTime | date:'h:mm a, d MMM' }}</span>
         </div>
       </div>
 
       <div class="hero-footer-row">
-        <button class="hero-btn" (click)="goToAuction(auctionItems[0].id)">
-          &#x2192;&nbsp; Enter Auction Room
+        <!-- SENSEI FIX: Disable button if PLANNED -->
+        <button class="hero-btn" 
+                [disabled]="auctionItems[0].status === 'PLANNED'"
+                [ngStyle]="{'opacity': auctionItems[0].status === 'PLANNED' ? '0.5' : '1', 'cursor': auctionItems[0].status === 'PLANNED' ? 'not-allowed' : 'pointer'}"
+                (click)="goToAuction(auctionItems[0].id)">
+          {{ auctionItems[0].status === 'PLANNED' ? '⏳ Waiting to Start...' : '&#x2192;&nbsp; Enter Auction Room' }}
         </button>
         <button
           *ngIf="auctionItems[0].sellerEmail === currentUserEmail"
@@ -47,12 +56,17 @@
 
   <!-- GRID: remaining items -->
   <div class="auction-grid" *ngIf="auctionItems.length > 1">
+    <!-- SENSEI FIX: Disable card click if PLANNED -->
     <div *ngFor="let item of auctionItems.slice(1)"
          class="auction-card"
-         (click)="goToAuction(item.id)">
+         [ngStyle]="{'opacity': item.status === 'PLANNED' ? '0.85' : '1'}"
+         (click)="item.status === 'ACTIVE' ? goToAuction(item.id) : null">
 
       <div class="card-image-wrapper">
-        <span class="card-tag">&#x2737; Lot #{{ item.id }}</span>
+        <!-- SENSEI FIX: Dynamic Tag for Grid items -->
+        <span class="card-tag" [ngStyle]="{'color': item.status === 'PLANNED' ? '#f0cc70' : ''}">
+          {{ item.status === 'ACTIVE' ? '&#x2737; Lot #' + item.id : '⏳ Upcoming Lot #' + item.id }}
+        </span>
         <img [src]="item.imageUrl || 'https://placehold.co/400x220/3D1F08/F0E8D5?text=Lot+%23' + item.id"
              alt="Watch" class="card-img">
         <div class="card-img-overlay"></div>
@@ -61,13 +75,22 @@
       <div class="card-content">
         <h3 class="card-item-title">{{ item.title }}</h3>
         <p class="card-fact">{{ item.quickFact }}</p>
+        
+        <!-- SENSEI FIX: Added small timer for grid items so they know when it starts -->
+        <p class="card-fact" style="font-size: 0.8rem; margin-top: -5px; color: #a9a9a9;">
+          {{ item.status === 'PLANNED' ? 'Starts: ' + (item.startTime | date:'short') : 'Ends: ' + (item.endTime | date:'short') }}
+        </p>
+
         <div class="card-footer">
           <div class="price-box">
             <span class="price-label">Current Bid</span>
             <span class="price-val">₹{{ item.currentHighestBid | number }}</span>
           </div>
           <div class="card-actions">
-            <span class="card-cta">&#x2192; Bid Now</span>
+            <!-- SENSEI FIX: Dynamic CTA text based on status -->
+            <span class="card-cta" [ngStyle]="{'color': item.status === 'PLANNED' ? '#888' : ''}">
+              {{ item.status === 'PLANNED' ? '⏳ Upcoming' : '&#x2192; Bid Now' }}
+            </span>
             <button
               *ngIf="item.sellerEmail === currentUserEmail"
               class="card-delete-btn"
@@ -84,8 +107,8 @@
   <!-- EMPTY STATE -->
   <div class="lobby-empty" *ngIf="auctionItems.length === 0">
     <p class="lobby-empty-orn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</p>
-    <h2 class="lobby-empty-title">No Active Lots</h2>
-    <p class="lobby-empty-sub">There are no live auctions at the moment.</p>
+    <h2 class="lobby-empty-title">No Lots Available</h2>
+    <p class="lobby-empty-sub">There are no active or upcoming auctions at the moment.</p>
     <a routerLink="/create-auction" class="lobby-empty-btn">&#x2295;&nbsp; List an Item</a>
   </div>
 

@@ -7,6 +7,7 @@ import { WalletComponent } from './components/wallet/wallet';
 import { ProfileComponent } from './components/profile/profile';
 import { RegisterComponent } from './components/register/register';
 import { MyBids } from './components/my-bids/my-bids';
+import { ResultsComponent } from './components/results/results';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -17,5 +18,7 @@ export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'register', component: RegisterComponent },
   { path: 'profile', component: ProfileComponent },
-  { path: 'my-bids', component: MyBids }
+  { path: 'my-bids', component: MyBids },
+  { path: 'results', component:   ResultsComponent }
+
 ];

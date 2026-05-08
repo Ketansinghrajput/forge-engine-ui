@@ -1,0 +1,177 @@
+<app-navbar></app-navbar>
+
+<div class="results-wrapper">
+
+  <!-- PAGE HEADER -->
+  <div class="results-header">
+    <p class="results-eyebrow">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</p>
+    <h1 class="results-title">Auction Results</h1>
+    <p class="results-subtitle">A complete record of concluded lots &amp; their winning bids</p>
+  </div>
+
+  <!-- LOADING -->
+  <div class="results-loading" *ngIf="isLoading">
+    <div class="results-spinner"></div>
+    <p class="results-loading-txt">Retrieving records&hellip;</p>
+  </div>
+
+  <!-- ERROR -->
+  <div class="lobby-empty" *ngIf="!isLoading && error">
+    <p class="lobby-empty-orn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</p>
+    <h2 class="lobby-empty-title">Records Unavailable</h2>
+    <p class="lobby-empty-sub">Could not retrieve auction results. Please try again later.</p>
+  </div>
+
+  <ng-container *ngIf="!isLoading && !error">
+
+    <!-- STATS BAR -->
+    <div class="stats-bar" *ngIf="results.length > 0">
+      <div class="stat-pill">
+        <span class="stat-pill-label">Total Lots</span>
+        <span class="stat-pill-value">{{ results.length }}</span>
+      </div>
+      <div class="stat-pill-sep">&#x2015;</div>
+      <div class="stat-pill">
+        <span class="stat-pill-label">Lots Sold</span>
+        <span class="stat-pill-value stat-pill-value--gold">{{ totalSold }}</span>
+      </div>
+      <div class="stat-pill-sep">&#x2015;</div>
+      <div class="stat-pill">
+        <span class="stat-pill-label">Unsold</span>
+        <span class="stat-pill-value stat-pill-value--muted">{{ totalUnsold }}</span>
+      </div>
+      <div class="stat-pill-sep">&#x2015;</div>
+      <div class="stat-pill">
+        <span class="stat-pill-label">Total GMV</span>
+        <span class="stat-pill-value stat-pill-value--gold">&#x20B9;{{ totalGMV | number:'1.0-0' }}</span>
+      </div>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-row" *ngIf="results.length > 0">
+      <button
+        *ngFor="let f of filters"
+        class="filter-btn"
+        [class.filter-btn--active]="activeFilter === f"
+        (click)="applyFilter(f)">
+        {{ f }}
+      </button>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="section-divider" *ngIf="results.length > 0">
+      <span class="section-divider-line"></span>
+      <span class="section-divider-orn">&#x2605;</span>
+      <span class="section-divider-line"></span>
+    </div>
+
+    <!-- RESULTS GRID -->
+    <div class="results-grid" *ngIf="filteredResults.length > 0">
+      <div class="result-card" *ngFor="let item of filteredResults">
+
+        <!-- IMAGE -->
+        <div class="result-card-img-wrap">
+          <span class="result-card-lot">Lot #{{ item.id }}</span>
+
+          <img
+            [src]="item.imageUrl || 'https://placehold.co/400x240/1a1008/c9a84c?text=Lot+%23' + item.id"
+            [alt]="item.title"
+            class="result-card-img">
+          <div class="result-card-img-overlay"></div>
+
+          <!-- STATUS BADGE -->
+          <span class="result-status-badge"
+            [class.result-status-badge--sold]="isSold(item)"
+            [class.result-status-badge--unsold]="!isSold(item)">
+            {{ isSold(item) ? '&#x2605; ' : '&#x25CB; ' }}
+         {{ getStatusLabel(item) }}
+          </span>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="result-card-body">
+          <h3 class="result-card-title">{{ item.title }}</h3>
+          <p class="result-card-desc">{{ item.description }}</p>
+
+          <!-- PRICE ROW -->
+          <div class="result-price-row">
+            <div class="result-price-block">
+              <span class="result-price-lbl">Hammer Price</span>
+              <span class="result-price-val"
+                [class.result-price-val--sold]="isSold(item)"
+                [class.result-price-val--unsold]="!isSold(item)">
+                &#x20B9;{{ item.currentPrice | number:'1.0-0' }}
+              </span>
+            </div>
+            <div class="result-price-block result-price-block--right">
+              <span class="result-price-lbl">Est. Opening</span>
+              <span class="result-price-val result-price-val--dim">
+                &#x20B9;{{ item.startPrice | number:'1.0-0' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- PRICE INCREASE TAG -->
+          <div class="result-increase-row" *ngIf="isSold(item) && getPriceIncrease(item) > 0">
+            <span class="result-increase-tag">
+              &#x25B2; {{ getPriceIncrease(item) }}% above estimate
+            </span>
+          </div>
+
+          <!-- WINNER ROW -->
+          <div class="result-winner-row" *ngIf="isSold(item)">
+            <span class="result-winner-orn">&#x2767;</span>
+            <div class="result-winner-info">
+              <span class="result-winner-lbl">Winning Bidder</span>
+              <span class="result-winner-name">
+                {{ item.winnerName || (item.winnerEmail ? item.winnerEmail.split('@')[0] : 'Anonymous') }}
+                <span class="result-winner-you" *ngIf="item.winnerEmail === currentUserEmail">&nbsp;(You)</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="result-no-winner" *ngIf="!isSold(item)">
+            <span class="result-no-winner-txt">&#x2015; Lot unsold — no qualifying bids &#x2015;</span>
+          </div>
+
+          <!-- FOOTER META -->
+          <div class="result-card-meta">
+            <span class="result-meta-item">
+              <span class="result-meta-icon">&#x25A3;</span>
+              {{ item.bidCount }} bid{{ item.bidCount !== 1 ? 's' : '' }}
+            </span>
+            <span class="result-meta-sep">&#x2015;</span>
+            <span class="result-meta-item">
+              <span class="result-meta-icon">&#x2767;</span>
+              {{ item.endTime | date:'d MMM yyyy' }}
+            </span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- EMPTY FILTERED STATE -->
+    <div class="lobby-empty" *ngIf="filteredResults.length === 0 && results.length > 0">
+      <p class="lobby-empty-orn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</p>
+      <h2 class="lobby-empty-title">No {{ activeFilter === 'SOLD' ? 'Sold' : 'Unsold' }} Lots</h2>
+      <p class="lobby-empty-sub">No records match the selected filter.</p>
+    </div>
+
+    <!-- EMPTY STATE — no results at all -->
+    <div class="lobby-empty" *ngIf="results.length === 0">
+      <p class="lobby-empty-orn">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</p>
+      <h2 class="lobby-empty-title">No Results Yet</h2>
+      <p class="lobby-empty-sub">Concluded auctions will appear here once they close.</p>
+      <a routerLink="/auctions" class="lobby-empty-btn">&#x2737;&nbsp; View Live Auctions</a>
+    </div>
+
+  </ng-container>
+
+  <!-- FOOTER -->
+  <div class="lobby-footer">
+    <div class="forn-sm">&#x2665;</div>
+    Forge Fine Auctions &copy; 2026 &nbsp;&#x2715;&nbsp; London &nbsp;&#x2715;&nbsp; New York &nbsp;&#x2715;&nbsp; Geneva
+  </div>
+
+</div>

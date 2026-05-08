@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap');
+@import "flatpickr/dist/themes/dark.css";
 
 :root {
   --bg-primary: #FAF5EB;
@@ -54,4 +55,16 @@ app-root {
   display: contents;
   width: 100%;
   min-height: 100vh;
+}
+
+.flatpickr-calendar.dark {
+  background: #1a1512 !important; /* Your dark brown-ish bg */
+  border: 1px solid #d4af37 !important; /* Gold border */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+  font-family: 'EB Garamond', serif !important;
+}
+.flatpickr-day.selected {
+  background: #d4af37 !important; /* Gold selection */
+  border-color: #d4af37 !important;
+  color: #000 !important;
 }

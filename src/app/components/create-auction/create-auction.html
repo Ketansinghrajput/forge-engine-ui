@@ -33,12 +33,32 @@
                   [(ngModel)]="form.description"></textarea>
       </div>
 
+      <!-- 🔥 SENSEI FIX: Hybrid Image Input Section Starts Here -->
       <div class="ca-field">
-        <label class="ca-label">Item Image URL</label>
-        <input class="ca-input" type="text"
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+          <label class="ca-label" style="margin-bottom: 0;">Item Image</label>
+          <a href="javascript:void(0)" (click)="toggleUploadMethod()" 
+             style="font-size: 0.85em; color: #d4af37; text-decoration: underline; cursor: pointer;">
+            {{ uploadMethod === 'url' ? 'Upload from device instead' : 'Provide URL instead' }}
+          </a>
+        </div>
+
+        <!-- URL Input Field -->
+        <input *ngIf="uploadMethod === 'url'"
+               class="ca-input" type="text"
                placeholder="https://images.unsplash.com/..."
                [(ngModel)]="form.imageUrl">
+
+        <!-- File Upload Field -->
+       <div *ngIf="uploadMethod === 'local'">
+          <input class="ca-input ca-file-input" type="file" accept="image/*"
+                 (change)="onFileSelected($event)">
+          <small *ngIf="isUploadingImage" style="color: #d4af37; margin-top: 5px; display: block;">
+            Uploading image securely to MinIO...
+          </small>
+        </div>
       </div>
+      <!-- 🔥 SENSEI FIX: Hybrid Image Input Section Ends Here -->
 
       <div class="ca-field">
         <label class="ca-label">Starting Price (₹)</label>
@@ -47,22 +67,24 @@
                [(ngModel)]="form.startingPrice">
       </div>
 
-      <div class="ca-row">
+     <div class="ca-row">
         <div class="ca-field">
           <label class="ca-label">Start Time</label>
-          <input class="ca-input" type="datetime-local"
-                 [(ngModel)]="form.startTime">
+          <input #startPicker class="ca-input" type="text"
+                 placeholder="Select Start Time"
+                 [(ngModel)]="form.startTime" readonly>
         </div>
         <div class="ca-field">
           <label class="ca-label">End Time</label>
-          <input class="ca-input" type="datetime-local"
-                 [(ngModel)]="form.endTime">
+          <input #endPicker class="ca-input" type="text"
+                 placeholder="Select End Time"
+                 [(ngModel)]="form.endTime" readonly>
         </div>
       </div>
 
       <button class="ca-btn"
               (click)="submit()"
-              [disabled]="isSubmitting">
+              [disabled]="isSubmitting || isUploadingImage">
         {{ isSubmitting ? 'Submitting...' : '→ List Item for Auction' }}
       </button>
 

@@ -8,6 +8,9 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../navbar/navbar';
 
+// Terminal statuses — auction is over, no more bids
+const TERMINAL = ['COMPLETED', 'EXPIRED', 'CLOSED', 'CANCELLED'];
+
 @Component({
   selector: 'app-auction-detail',
   standalone: true,
@@ -21,21 +24,20 @@ export class AuctionDetail implements OnInit, OnDestroy {
   currentBid: number = 0;
   customBidAmount: number = 0;
   availableFunds: number = 0;
-  highestBidder: string = 'Loading engine...';
+  highestBidder: string = 'Loading...';
   auctionTitle: string = '';
   auctionDescription: string = '';
   auctionStatus: string = 'ACTIVE';
   auctionRef: string = '';
   auctionImageUrl: string = '';
-  feed: any[] = [];
+  activityLogs: any[] = [];
   errorMsg: string = '';
 
   remainingTime: string = '';
   isUrgent: boolean = false;
   endTime: Date = new Date();
-  startTime: Date = new Date(); // ✅ NEW
+  startTime: Date = new Date();
 
-  isDropdownOpen: boolean = false;
   isBidding: boolean = false;
   private wsSubscription!: Subscription;
   private timerId: any;
@@ -50,15 +52,28 @@ export class AuctionDetail implements OnInit, OnDestroy {
     private route: ActivatedRoute
   ) {}
 
-  get userInitials(): string {
-    const email = localStorage.getItem('userEmail') || '';
-    return email.slice(0, 2).toUpperCase();
+  // ── computed helpers used in template ──────────────────────────────────────
+
+  get isTerminal(): boolean {
+    return TERMINAL.includes(this.auctionStatus);
   }
 
-  get userName(): string {
-    const email = localStorage.getItem('userEmail') || '';
-    return email.split('@')[0];
-  }
+  /** CLOSED/COMPLETED with an actual winner */
+get hasWinner(): boolean {
+  const noWinnerValues = [
+    'No Bids',
+    'No Winner', 
+    'Loading...',
+    'Waiting for Bids...',
+    'No Bids Yet',
+    'Bidding not started',
+    'Winner (check results)',
+    ''
+  ];
+  return !!this.highestBidder && !noWinnerValues.includes(this.highestBidder);
+}
+
+  // ── lifecycle ──────────────────────────────────────────────────────────────
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -75,23 +90,35 @@ export class AuctionDetail implements OnInit, OnDestroy {
     try {
       this.wsService.connect(this.auctionId);
       this.wsSubscription = this.wsService.updates$.subscribe((msg: any) => {
-        console.log("SENSEI DEBUG: Received WebSocket msg", msg);
+        console.log('WS msg:', msg);
 
-        const priceFromMsg = msg.newPrice || msg.currentHighestBid;
+          if (msg.type === 'BID_ERROR' || msg.type === 'ERROR' || msg.error || msg.errorMessage) {
+    const rawErr = msg.errorMessage || msg.error || msg.message || 'Bid could not be placed.';
+    this.errorMsg = rawErr.replace(/^bid failed:\s*/i, '').trim();
+    this.isBidding = false;
+    setTimeout(() => { this.errorMsg = ''; this.cdr.detectChanges(); }, 5000);
+    this.cdr.detectChanges();
+    return;
+  }
 
-        // Handle Settlement via WebSocket push
-        if (msg.type === 'AUCTION_COMPLETED' || msg.type === 'AUCTION_EXPIRED' ||
-            msg.status === 'COMPLETED' || msg.status === 'EXPIRED') {
+        const priceFromMsg = msg.newPrice || msg.currentHighestBid || msg.amount;
 
-          const newStatus = (msg.status || msg.type?.replace('AUCTION_', '') || 'COMPLETED').toUpperCase();
-          this.auctionStatus = newStatus;
-          this.remainingTime = "00h 00m 00s";
-          if (this.timerId) { clearInterval(this.timerId); this.timerId = null; }
+        // ── Terminal push from WebSocket ──────────────────────────────────
+        const terminalByType = ['AUCTION_COMPLETED', 'AUCTION_EXPIRED', 'AUCTION_CLOSED'].includes(msg.type);
+        const terminalByStatus = TERMINAL.includes(msg.status);
+
+        if (terminalByType || terminalByStatus) {
+          const newStatus = msg.status
+            || msg.type?.replace('AUCTION_', '')
+            || 'COMPLETED';
+          this.auctionStatus = newStatus.toUpperCase();
+          this.remainingTime = '00h 00m 00s';
+          this.stopTimer();
 
           if (priceFromMsg) this.currentBid = priceFromMsg;
 
           const winnerRaw = msg.winnerName || msg.highestBidderName || msg.highestBidder || msg.bidder || '';
-          this.highestBidder = this.resolveDisplayName(winnerRaw);
+          this.highestBidder = this.resolveWinner(winnerRaw, this.auctionStatus);
           this.cdr.detectChanges();
 
           if (!this.settlementFetchDone) {
@@ -101,31 +128,30 @@ export class AuctionDetail implements OnInit, OnDestroy {
           return;
         }
 
-        // Normal Bid Update
+        // ── Normal bid update ─────────────────────────────────────────────
         if (priceFromMsg) {
           this.currentBid = priceFromMsg;
           const bidderRaw = msg.bidderName || msg.winnerName || msg.bidder || '';
-          this.highestBidder = this.resolveDisplayName(bidderRaw);
+          const resolvedBidder = this.resolveDisplayName(bidderRaw);
+          this.highestBidder = resolvedBidder;
 
-          const isDuplicate = this.feed.some(entry => entry.newPrice === priceFromMsg);
+          const isDuplicate = this.activityLogs.some(e => e.amount === priceFromMsg);
           if (!isDuplicate) {
-            this.feed.unshift({
-              newPrice: priceFromMsg,
-              bidderName: this.highestBidder,
-              timestamp: new Date().toLocaleTimeString('en-IN')
+            this.activityLogs.unshift({
+              amount: priceFromMsg,
+              bidderName: resolvedBidder,
+              time: new Date()
             });
           }
         }
 
-        // Sync extended endTime from WS broadcast
+        // ── Snipe protection: auction extended ───────────────────────────
         if (msg.endTime) {
-          const newEndTime = new Date(msg.endTime);
-          if (!isNaN(newEndTime.getTime()) && newEndTime.getTime() > this.endTime.getTime()) {
-            console.log("SENSEI DEBUG: Auction extended! New endTime:", msg.endTime);
-            this.endTime = newEndTime;
+          const newEnd = new Date(msg.endTime);
+          if (!isNaN(newEnd.getTime()) && newEnd.getTime() > this.endTime.getTime()) {
+            this.endTime = newEnd;
             this.settlementFetchDone = false;
             this.retryCount = 0;
-
             if (!this.timerId) {
               this.auctionStatus = 'ACTIVE';
               this.timerId = setInterval(() => {
@@ -143,15 +169,11 @@ export class AuctionDetail implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       });
     } catch (e) {
-      console.error("Connection failed!", e);
+      console.error('WS connection failed:', e);
     }
   }
 
-  private resolveDisplayName(raw: string): string {
-    if (!raw) return 'Unknown';
-    if (raw.includes('@')) return raw.split('@')[0];
-    return raw;
-  }
+  // ── data loading ───────────────────────────────────────────────────────────
 
   loadInitialState() {
     const token = localStorage.getItem('token');
@@ -160,41 +182,35 @@ export class AuctionDetail implements OnInit, OnDestroy {
     this.http.get<any>(`http://localhost:8080/api/v1/engine/auction-state/${this.auctionId}`, { headers })
       .subscribe({
         next: (state) => {
-          console.log("SENSEI DEBUG: Backend State ->", state);
+          this.activityLogs = state.history || [];
 
-          this.currentBid = state.currentBid ?? state.currentHighestBid ?? 0;
-          this.auctionTitle = state.title || 'Live Auction';
+          this.currentBid       = state.currentBid ?? state.currentHighestBid ?? 0;
+          this.auctionTitle     = state.title || 'Live Auction';
           this.auctionDescription = state.description || '';
-          this.auctionImageUrl = state.imageUrl || '';
+          this.auctionImageUrl  = state.imageUrl || '';
 
           const backendStatus = (state.status || 'ACTIVE').toUpperCase();
 
-          // ✅ Sync startTime
+          // Sync times
           if (state.startTime) {
-            const fetchedStartTime = new Date(state.startTime);
-            if (!isNaN(fetchedStartTime.getTime())) {
-              this.startTime = fetchedStartTime;
-            }
+            const t = new Date(state.startTime);
+            if (!isNaN(t.getTime())) this.startTime = t;
           }
-
-          // ✅ Sync endTime
           if (state.endTime) {
-            const fetchedEndTime = new Date(state.endTime);
-            if (!isNaN(fetchedEndTime.getTime())) {
-              this.endTime = fetchedEndTime;
-            }
+            const t = new Date(state.endTime);
+            if (!isNaN(t.getTime())) this.endTime = t;
           }
 
           const now = new Date().getTime();
 
-          // ✅ Check if auction hasn't started yet
-          if (this.startTime.getTime() > now && backendStatus === 'ACTIVE') {
+          // Derive effective status
+          if (backendStatus === 'ACTIVE' && this.startTime.getTime() > now) {
             this.auctionStatus = 'UPCOMING';
           } else {
             this.auctionStatus = backendStatus;
           }
 
-          // Retry if backend still says ACTIVE but end time has passed
+          // Retry if backend still ACTIVE but time has passed (scheduler lag)
           if (this.endTime.getTime() <= now && this.auctionStatus === 'ACTIVE') {
             this.retryCount++;
             if (this.retryCount <= 5) {
@@ -204,22 +220,14 @@ export class AuctionDetail implements OnInit, OnDestroy {
             this.retryCount = 0;
           }
 
+          // Resolve winner/bidder display
           const winnerRaw = state.highestBidderName || state.highestBidder || '';
-          if (winnerRaw) {
-            this.highestBidder = this.resolveDisplayName(winnerRaw);
-          } else if (this.auctionStatus === 'COMPLETED') {
-            this.highestBidder = 'Winner (check results)';
-          } else if (this.auctionStatus === 'EXPIRED') {
-            this.highestBidder = 'No Winner';
-          } else if (this.auctionStatus === 'UPCOMING') {
-            this.highestBidder = 'Bidding not started';
-          } else {
-            this.highestBidder = 'No Bids Yet';
-          }
+          this.highestBidder = this.resolveWinner(winnerRaw, this.auctionStatus);
 
-          if (this.auctionStatus === 'COMPLETED' || this.auctionStatus === 'EXPIRED') {
-            this.remainingTime = "00h 00m 00s";
-            if (this.timerId) { clearInterval(this.timerId); this.timerId = null; }
+          // Stop timer if terminal
+          if (TERMINAL.includes(this.auctionStatus)) {
+            this.remainingTime = '00h 00m 00s';
+            this.stopTimer();
           } else if (!this.timerId) {
             this.timerId = setInterval(() => {
               this.updateCountdown();
@@ -229,12 +237,10 @@ export class AuctionDetail implements OnInit, OnDestroy {
 
           this.cdr.detectChanges();
         },
-        error: (err) => {
-          console.error("SENSEI DEBUG: Failed to load auction state", err);
-        }
+        error: (err) => console.error('Failed to load auction state:', err)
       });
 
-    this.http.get<any>(`http://localhost:8080/api/v1/wallets/balance`, { headers })
+    this.http.get<any>('http://localhost:8080/api/v1/wallets/balance', { headers })
       .subscribe({
         next: (wallet) => {
           this.availableFunds = wallet.balance ?? wallet.amount ?? 0;
@@ -243,6 +249,8 @@ export class AuctionDetail implements OnInit, OnDestroy {
       });
   }
 
+  // ── bidding ────────────────────────────────────────────────────────────────
+
   placeBid() {
     if (this.auctionStatus !== 'ACTIVE') return;
 
@@ -250,7 +258,6 @@ export class AuctionDetail implements OnInit, OnDestroy {
       this.errorMsg = `Minimum bid is ₹${this.currentBid + 1}`;
       return;
     }
-
     if (this.customBidAmount > this.availableFunds) {
       this.errorMsg = `Insufficient funds. Available: ₹${this.availableFunds.toLocaleString('en-IN')}`;
       return;
@@ -265,14 +272,14 @@ export class AuctionDetail implements OnInit, OnDestroy {
     }, 1500);
   }
 
+  // ── countdown ──────────────────────────────────────────────────────────────
+
   updateCountdown() {
     const now = new Date().getTime();
 
-    // ✅ UPCOMING: show start countdown
     if (this.auctionStatus === 'UPCOMING' || this.startTime.getTime() > now) {
       const distance = this.startTime.getTime() - now;
       if (distance <= 0) {
-        // Just started — reload to get ACTIVE status
         this.auctionStatus = 'ACTIVE';
         this.settlementFetchDone = false;
         this.retryCount = 0;
@@ -284,18 +291,15 @@ export class AuctionDetail implements OnInit, OnDestroy {
     }
 
     if (this.auctionStatus !== 'ACTIVE') return;
-    if (!this.endTime) return;
 
     const distance = this.endTime.getTime() - now;
-
     if (distance <= 0) {
-      this.remainingTime = "00h 00m 00s";
+      this.remainingTime = '00h 00m 00s';
       this.isUrgent = false;
-      if (this.timerId) { clearInterval(this.timerId); this.timerId = null; }
+      this.stopTimer();
       if (!this.settlementFetchDone) {
         this.settlementFetchDone = true;
         this.retryCount = 0;
-        console.log("Timer zero! Fetching final result...");
         setTimeout(() => this.loadInitialState(), 2000);
       }
       return;
@@ -305,7 +309,6 @@ export class AuctionDetail implements OnInit, OnDestroy {
     this.remainingTime = this.formatDistance(distance);
   }
 
-  // ✅ Shared formatter for both start and end countdowns
   private formatDistance(distance: number): string {
     const days    = Math.floor(distance / (1000 * 60 * 60 * 24));
     const hours   = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -318,15 +321,42 @@ export class AuctionDetail implements OnInit, OnDestroy {
     return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
   }
 
-  toggleDropdown() { this.isDropdownOpen = !this.isDropdownOpen; }
-
-  logout() {
-    localStorage.clear();
-    this.router.navigate(['/login']);
+  private stopTimer() {
+    if (this.timerId) {
+      clearInterval(this.timerId);
+      this.timerId = null;
+    }
   }
+
+  // ── helpers ────────────────────────────────────────────────────────────────
+
+  private resolveDisplayName(raw: string): string {
+    if (!raw) return 'Unknown';
+    if (raw.includes('@')) return raw.split('@')[0];
+    return raw;
+  }
+
+  /**
+   * Determine what to show in the "winner" field based on status + raw name.
+   * CLOSED/COMPLETED with no bidder = unsold.
+   */
+  private resolveWinner(raw: string, status: string): string {
+    if (raw) return this.resolveDisplayName(raw);
+
+    switch (status) {
+      case 'CLOSED':
+      case 'EXPIRED':    return 'No Bids';
+      case 'COMPLETED':  return 'Winner (check results)';
+      case 'UPCOMING':   return 'Bidding not started';
+      case 'ACTIVE':     return 'No Bids Yet';
+      default:           return 'No Bids Yet';
+    }
+  }
+
+  // ── lifecycle cleanup ──────────────────────────────────────────────────────
 
   ngOnDestroy() {
     if (this.wsSubscription) this.wsSubscription.unsubscribe();
-    if (this.timerId) clearInterval(this.timerId);
+    this.stopTimer();
   }
 }
