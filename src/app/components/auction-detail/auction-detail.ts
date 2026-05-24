@@ -204,7 +204,9 @@ get hasWinner(): boolean {
           const now = new Date().getTime();
 
           // Derive effective status
-          if (backendStatus === 'ACTIVE' && this.startTime.getTime() > now) {
+          if (backendStatus === 'PLANNED') {
+            this.auctionStatus = 'UPCOMING';
+          } else if (backendStatus === 'ACTIVE' && this.startTime.getTime() > now) {
             this.auctionStatus = 'UPCOMING';
           } else {
             this.auctionStatus = backendStatus;
@@ -240,10 +242,10 @@ get hasWinner(): boolean {
         error: (err) => console.error('Failed to load auction state:', err)
       });
 
-    this.http.get<any>('http://localhost:8080/api/v1/wallets/balance', { headers })
+    this.http.get<any>('http://localhost:8080/api/v1/wallet/balance', { headers })
       .subscribe({
         next: (wallet) => {
-          this.availableFunds = wallet.balance ?? wallet.amount ?? 0;
+          this.availableFunds = wallet.availableBalance ?? wallet.balance ?? wallet.amount ?? 0;
           this.cdr.detectChanges();
         }
       });

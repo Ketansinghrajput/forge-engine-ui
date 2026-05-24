@@ -66,6 +66,14 @@
   margin-bottom: 2rem;
 }
 
+.wt-balance-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.wt-balance-group--right { text-align: right; }
+
 .wt-balance-lbl {
   font-family: 'Courier Prime', monospace;
   font-size: 0.65rem;
@@ -79,6 +87,13 @@
   font-family: 'Playfair Display', serif;
   font-size: 1.6rem;
   color: var(--text-primary);
+  font-weight: 600;
+}
+
+.wt-balance-locked {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -150,7 +165,6 @@
 }
 
 .wt-input:focus { border-color: var(--text-primary); }
-
 .wt-select { cursor: pointer; }
 
 .wt-row {
@@ -270,4 +284,146 @@
   font-weight: 700;
   text-align: center;
   margin-bottom: 1.5rem;
+}
+
+/* ── Transaction History ─────────────────────────────────────────── */
+
+.wt-tx-section {
+  margin-top: 2.5rem;
+  border-top: 1.5px solid var(--border);
+  padding-top: 2rem;
+}
+
+.wt-tx-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.wt-tx-filters {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.wt-filter-pill {
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border);
+  padding: 0.3rem 0.8rem;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.wt-filter-pill:hover { background: var(--bg-input); }
+.wt-filter-pill--active {
+  background: var(--text-primary);
+  color: var(--text-light);
+  border-color: var(--text-primary);
+}
+
+.wt-tx-empty {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.wt-tx-list { display: flex; flex-direction: column; }
+
+.wt-tx-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 0.5px solid var(--border-light);
+}
+
+.wt-tx-row:last-child { border-bottom: none; }
+
+.wt-tx-icon {
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.wt-tx-icon--credit { border-color: #5A8A5A; color: #2A5A2A; background: #EAF4EA; }
+.wt-tx-icon--debit  { border-color: #8B3030; color: #6B2020; background: #F5E8E8; }
+
+.wt-tx-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.wt-tx-desc {
+  font-family: 'EB Garamond', serif;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wt-tx-sub {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.wt-tx-amount {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.wt-tx-amount--credit { color: #2A5A2A; }
+.wt-tx-amount--debit  { color: #6B2020; }
+
+.wt-tx-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding-top: 1.2rem;
+}
+
+.wt-page-btn {
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border);
+  padding: 0.4rem 0.9rem;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.wt-page-btn:hover:not(:disabled) { background: var(--bg-input); }
+.wt-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.wt-page-info {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  color: var(--text-secondary);
 }

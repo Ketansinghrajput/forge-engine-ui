@@ -20,7 +20,19 @@ export class WalletComponent {
   isProcessing = false;
   successMsg = '';
   errorMsg = '';
-  currentBalance: number = 0;
+
+  // Balance
+  availableBalance: number = 0;
+  lockedAmount: number = 0;
+
+  // Transactions
+  transactions: any[] = [];
+  txLoading = false;
+  txFilter: string | null = null;
+
+  // Pagination
+  currentPage: number = 0;
+  totalPages: number = 1;
 
   presetAmounts = [10000, 25000, 50000, 100000, 250000];
 
@@ -32,17 +44,65 @@ export class WalletComponent {
 
   constructor(private http: HttpClient, private router: Router) {
     this.loadBalance();
+    this.loadTransactions();
   }
 
- loadBalance() {
-  const token = localStorage.getItem('token');
-  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  this.http.get<any>('http://localhost:8080/api/v1/wallets/balance', { headers }) 
-    .subscribe({
-      next: (res) => { this.currentBalance = res.balance; }, //  was res.totalBalance
-      error: (err) => console.error('Balance load failed', err)
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
+
+  loadBalance() {
+    this.http.get<any>('http://localhost:8080/api/v1/wallet/balance', { headers: this.getHeaders() })
+      .subscribe({
+        next: (res) => {
+          this.availableBalance = res.availableBalance ?? res.balance ?? 0;
+          this.lockedAmount = res.lockedAmount ?? 0;
+        },
+        error: (err) => console.error('Balance load failed', err)
+      });
+  }
+
+  loadTransactions() {
+    this.txLoading = true;
+    const params: any = { page: this.currentPage, size: 10 };
+    if (this.txFilter) params['type'] = this.txFilter;
+
+    this.http.get<any>('http://localhost:8080/api/v1/wallet/transactions', {
+      headers: this.getHeaders(),
+      params
+    }).subscribe({
+      next: (res) => {
+        this.transactions = res.content ?? res ?? [];
+        this.totalPages = res.totalPages ?? 1;
+        this.txLoading = false;
+      },
+      error: (err) => {
+        console.error('Transactions load failed', err);
+        this.txLoading = false;
+      }
     });
-}
+  }
+
+  setFilter(filter: string | null) {
+    this.txFilter = filter;
+    this.currentPage = 0;
+    this.loadTransactions();
+  }
+
+  prevPage() {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadTransactions();
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.loadTransactions();
+    }
+  }
 
   get finalAmount(): number {
     return this.customAmount || this.selectedAmount || 0;
@@ -66,27 +126,24 @@ export class WalletComponent {
     this.isProcessing = true;
     this.errorMsg = '';
 
-    // Simulate payment processing delay
     setTimeout(() => {
-      const token = localStorage.getItem('token');
-      const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-
-   this.http.post<any>('http://localhost:8080/api/v1/wallets/topup', // plural
-  { amount: this.finalAmount }, { headers })
-  .subscribe({
-    next: (res) => {
-      this.isProcessing = false;
-      this.currentBalance = res.balance; //  use server value, not local addition
-      this.successMsg = `₹${this.finalAmount.toLocaleString('en-IN')} added successfully!`;
-      this.selectedAmount = null;
-      this.customAmount = null;
-      this.selectedMethod = '';
-    },
-    error: (err) => {
-      this.isProcessing = false;
-      this.errorMsg = 'Transaction failed. Please try again.';
-    }
-  });
-    }, 2000); // 2s fake processing
+      this.http.post<any>('http://localhost:8080/api/v1/wallet/topup',
+        { amount: this.finalAmount }, { headers: this.getHeaders() })
+        .subscribe({
+          next: (res) => {
+            this.isProcessing = false;
+            this.successMsg = `₹${this.finalAmount.toLocaleString('en-IN')} added successfully!`;
+            this.selectedAmount = null;
+            this.customAmount = null;
+            this.selectedMethod = '';
+            this.loadBalance();
+            this.loadTransactions();
+          },
+          error: (err) => {
+            this.isProcessing = false;
+            this.errorMsg = 'Transaction failed. Please try again.';
+          }
+        });
+    }, 2000);
   }
 }
