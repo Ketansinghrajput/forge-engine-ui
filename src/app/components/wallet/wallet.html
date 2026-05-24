@@ -5,14 +5,20 @@
 
     <div class="wt-header">
       <p class="wt-eyebrow">&#x2015;&nbsp;&#x2605;&nbsp;&#x2015;</p>
-      <h2 class="wt-title">Add Funds</h2>
-      <p class="wt-subtitle">Top up your Forge bidding wallet</p>
+      <h2 class="wt-title">My Wallet</h2>
+      <p class="wt-subtitle">Manage your Forge bidding funds</p>
     </div>
 
-    <!-- CURRENT BALANCE -->
+    <!-- BALANCE ROW -->
     <div class="wt-balance">
-      <span class="wt-balance-lbl">Current Balance</span>
-      <span class="wt-balance-v">₹{{ currentBalance | number:'1.2-2' }}</span>
+      <div class="wt-balance-group">
+        <span class="wt-balance-lbl">Available Balance</span>
+        <span class="wt-balance-v">₹{{ availableBalance | number:'1.2-2' }}</span>
+      </div>
+      <div class="wt-balance-group wt-balance-group--right">
+        <span class="wt-balance-lbl">Locked</span>
+        <span class="wt-balance-locked">₹{{ lockedAmount | number:'1.2-2' }}</span>
+      </div>
     </div>
 
     <!-- SUCCESS -->
@@ -109,6 +115,61 @@
         <span *ngIf="isProcessing">&#x23F3;&nbsp; Processing...</span>
       </button>
 
+    </div>
+
+    <!-- TRANSACTION HISTORY -->
+    <div class="wt-tx-section">
+      <div class="wt-tx-header">
+        <div class="wt-section-lbl" style="margin-bottom:0">Transaction History</div>
+        <div class="wt-tx-filters">
+          <button class="wt-filter-pill"
+                  [class.wt-filter-pill--active]="txFilter === null"
+                  (click)="setFilter(null)">All</button>
+          <button class="wt-filter-pill"
+                  [class.wt-filter-pill--active]="txFilter === 'CREDIT'"
+                  (click)="setFilter('CREDIT')">Credits</button>
+          <button class="wt-filter-pill"
+                  [class.wt-filter-pill--active]="txFilter === 'DEBIT'"
+                  (click)="setFilter('DEBIT')">Debits</button>
+        </div>
+      </div>
+
+      <!-- LOADING -->
+      <div class="wt-tx-empty" *ngIf="txLoading">
+        &#x23F3; Loading transactions...
+      </div>
+
+      <!-- EMPTY -->
+      <div class="wt-tx-empty" *ngIf="!txLoading && transactions.length === 0">
+        &#x2015; No transactions yet &#x2015;
+      </div>
+
+      <!-- LIST -->
+      <div class="wt-tx-list" *ngIf="!txLoading && transactions.length > 0">
+        <div class="wt-tx-row" *ngFor="let tx of transactions">
+          <div class="wt-tx-icon"
+               [class.wt-tx-icon--credit]="tx.type === 'CREDIT'"
+               [class.wt-tx-icon--debit]="tx.type === 'DEBIT'">
+            {{ tx.type === 'CREDIT' ? '↓' : '↑' }}
+          </div>
+          <div class="wt-tx-meta">
+            <span class="wt-tx-desc">{{ tx.description }}</span>
+            <span class="wt-tx-sub">{{ tx.reason | titlecase }} &bull; {{ tx.createdAt | date:'dd MMM yyyy, hh:mm a' }}</span>
+          </div>
+          <div class="wt-tx-amount"
+               [class.wt-tx-amount--credit]="tx.type === 'CREDIT'"
+               [class.wt-tx-amount--debit]="tx.type === 'DEBIT'">
+            {{ tx.type === 'CREDIT' ? '+' : '-' }}₹{{ tx.amount | number:'1.2-2' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="wt-tx-pagination" *ngIf="totalPages > 1">
+        <button class="wt-page-btn" (click)="prevPage()" [disabled]="currentPage === 0">&#x2190;</button>
+        <span class="wt-page-info">{{ currentPage + 1 }} / {{ totalPages }}</span>
+        <button class="wt-page-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">&#x2192;</button>
+      </div>
     </div>
 
   </div>

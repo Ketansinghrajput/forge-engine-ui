@@ -56,11 +56,10 @@
 
   <!-- GRID: remaining items -->
   <div class="auction-grid" *ngIf="auctionItems.length > 1">
-    <!-- SENSEI FIX: Disable card click if PLANNED -->
     <div *ngFor="let item of auctionItems.slice(1)"
          class="auction-card"
          [ngStyle]="{'opacity': item.status === 'PLANNED' ? '0.85' : '1'}"
-         (click)="item.status === 'ACTIVE' ? goToAuction(item.id) : null">
+         (click)="goToAuction(item.id)">
 
       <div class="card-image-wrapper">
         <!-- SENSEI FIX: Dynamic Tag for Grid items -->

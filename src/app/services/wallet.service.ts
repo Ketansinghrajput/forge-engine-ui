@@ -25,7 +25,7 @@ export class WalletService {
       }
     });
 
-  this.http.get<any>('http://localhost:8080/api/v1/wallets/balance', { headers })
+  this.http.get<any>('http://localhost:8080/api/v1/wallet/balance', { headers })
     .subscribe({
       next: (wallet) => {
         const available = wallet.balance ?? wallet.availableBalance ?? wallet.amount ?? 0;
