@@ -1,20 +1,20 @@
 <div align="center">
 
-```
+<pre>
 ╔══════════════════════════════════════════════════════╗
 ║                                                      ║
 ║        F O R G E  —  F I N E  A U C T I O N S       ║
 ║          Real-Time Bidding  ×  Angular 21            ║
 ║                                                      ║
 ╚══════════════════════════════════════════════════════╝
-```
+</pre>
 
 [![Angular](https://img.shields.io/badge/Angular-21-DD0031?style=flat-square&logo=angular)](https://angular.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript)](https://typescriptlang.org)
 [![WebSocket](https://img.shields.io/badge/WebSocket-STOMP-brightgreen?style=flat-square)](https://stomp.github.io)
 [![License](https://img.shields.io/badge/license-MIT-gold?style=flat-square)](LICENSE)
 
-*A vintage-aesthetic, real-time auction frontend — built to feel like a Christie's catalogue, engineered to move like a trading floor.*
+*A vintage-aesthetic, real-time auction frontend! Built to feel like a Christie's catalogue, engineered to move like a trading floor.*
 
 **[Backend →](https://github.com/Ketansinghrajput/FORGE)**
 
