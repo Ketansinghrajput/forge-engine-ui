@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject, BehaviorSubject } from 'rxjs';
 import SockJS from 'sockjs-client';
-import { over, Client, Subscription } from 'stompjs';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { WalletService } from './wallet.service';
 
 export interface AuctionUpdate {
@@ -19,8 +19,8 @@ export interface AuctionUpdate {
 })
 export class WebsocketService {
   private stompClient: Client | null = null;
-  private auctionSubscription: Subscription | null = null;
-  private errorSubscription: Subscription | null = null; // 🔥 personal error queue
+  private auctionSubscription: StompSubscription | null = null;
+  private errorSubscription: StompSubscription | null = null;
 
   public connectionStatus$ = new BehaviorSubject<boolean>(false);
   public updates$ = new Subject<AuctionUpdate>();
@@ -40,32 +40,29 @@ export class WebsocketService {
       this.disconnect();
     }
 
-    const socket = new SockJS('http://localhost:8080/ws-forge');
-    this.stompClient = over(socket);
-
-    this.stompClient.debug = (msg: string) => {
-      if (msg.includes('SEND') || msg.includes('MESSAGE')) {
-        console.log('STOMP Log:', msg);
-      }
-    };
-
-    const headers = { 'Authorization': `Bearer ${token}` };
-
-    this.stompClient.connect(
-      headers,
-      (frame) => {
+    this.stompClient = new Client({
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws-forge'),
+      connectHeaders: { 'Authorization': `Bearer ${token}` },
+      debug: (msg: string) => {
+        if (msg.includes('SEND') || msg.includes('MESSAGE')) {
+          console.log('STOMP Log:', msg);
+        }
+      },
+      reconnectDelay: 5000,
+      onConnect: () => {
         this.connectionStatus$.next(true);
         const user = this.parseJwt(token)?.sub || 'Unknown User';
         console.log(`Connected to Forge Engine as: ${user}`);
         this.subscribeToAuction(auctionId);
-        this.subscribeToPersonalErrors(); // 🔥 personal error queue bhi subscribe karo
+        this.subscribeToPersonalErrors();
       },
-      (err) => {
+      onStompError: (frame) => {
         this.connectionStatus$.next(false);
-        console.error('WebSocket Error. Retrying in 5s...', err);
-        setTimeout(() => this.connect(auctionId), 5000);
+        console.error('WebSocket Error:', frame);
       }
-    );
+    });
+
+    this.stompClient.activate();
   }
 
   private parseJwt(token: string) {
@@ -84,7 +81,7 @@ export class WebsocketService {
     }
 
     const topic = `/topic/auctions/${auctionId}`;
-    this.auctionSubscription = this.stompClient.subscribe(topic, (msg) => {
+    this.auctionSubscription = this.stompClient.subscribe(topic, (msg: IMessage) => {
       if (msg.body) {
         const data: any = JSON.parse(msg.body);
         this.updates$.next(data);
@@ -103,7 +100,6 @@ export class WebsocketService {
     console.log(`Subscribed to topic: ${topic}`);
   }
 
-  // 🔥 Backend personal error queue — sirf is user ko milti hai
   private subscribeToPersonalErrors() {
     if (!this.stompClient || !this.stompClient.connected) return;
 
@@ -111,19 +107,14 @@ export class WebsocketService {
       this.errorSubscription.unsubscribe();
     }
 
-    // Spring Boot ka default personal queue prefix hota hai /user/queue/
-    // Backend mein convertAndSendToUser() se aata hai
-    this.errorSubscription = this.stompClient.subscribe('/user/queue/errors', (msg) => {
+    this.errorSubscription = this.stompClient.subscribe('/user/queue/errors', (msg: IMessage) => {
       if (msg.body) {
         const data: any = JSON.parse(msg.body);
         console.log('Personal error received:', data);
 
-        // Error ko updates$ mein daal do — component wahan sun raha hai
         this.updates$.next({
           ...data,
           type: 'BID_ERROR',
-          // Backend "Bid Failed: Seller cannot bid..." bhejta hai
-          // message field mein raw string bhi ho sakti hai
           errorMessage: data.message || data.errorMessage || data.error || msg.body
         });
       }
@@ -135,7 +126,7 @@ export class WebsocketService {
   sendBid(auctionId: number, bidAmount: number) {
     if (this.stompClient && this.stompClient.connected) {
       const bidPayload = { auctionId, bidAmount };
-      this.stompClient.send('/app/bid', {}, JSON.stringify(bidPayload));
+      this.stompClient.publish({ destination: '/app/bid', body: JSON.stringify(bidPayload) });
       console.log('Bid Fired:', bidPayload);
     } else {
       console.error('Connection Down! Bid fail ho gayi.');
@@ -144,10 +135,10 @@ export class WebsocketService {
 
   disconnect() {
     if (this.errorSubscription) {
-      this.errorSubscription.unsubscribe(); // 🔥 cleanup
+      this.errorSubscription.unsubscribe();
     }
     if (this.stompClient) {
-      this.stompClient.disconnect(() => {
+      this.stompClient.deactivate().then(() => {
         this.connectionStatus$.next(false);
         console.log('Disconnected from Engine.');
       });
