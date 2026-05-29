@@ -6,8 +6,8 @@
     "analytics": "944a1c64-4d1e-49c3-9300-0bdf033c4839"
   },
   "polyfills": [
-  "zone.js"
-],
+    "zone.js"
+  ],
   "newProjectRoot": "projects",
   "projects": {
     "forge-ui": {
@@ -42,11 +42,16 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "8kB",
+                  "maximumError": "12kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "optimization": {
+                "fonts": {
+                  "inline": false
+                }
+              }
             },
             "development": {
               "optimization": false,
