@@ -129,7 +129,7 @@ export class WebsocketService {
       this.stompClient.publish({ destination: '/app/bid', body: JSON.stringify(bidPayload) });
       console.log('Bid Fired:', bidPayload);
     } else {
-      console.error('Connection Down! Bid fail ho gayi.');
+      console.error('Connection Down! Bid fail ho gayi bhayo');
     }
   }
 
